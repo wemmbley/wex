@@ -1,0 +1,34 @@
+:root {
+    --shadow-card: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    --shadow-card-xl: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+    --shadow-card-xxl: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+
+    --shadow-xs: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+    --shadow-sm: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+    --shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    --shadow-xl: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+    --shadow-xxl: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.dark {
+    --shadow-card: rgba(255, 255, 255, 0.1) 0px 2px 8px 0px;
+    --shadow-card-xl: rgba(255, 255, 255, 0.15) 0px 8px 24px;
+    --shadow-card-xxl: rgba(255, 255, 255, 0.2) 0px 7px 29px 0px;
+
+    --shadow-xs: rgba(255, 255, 255, 0.05) 0px 1px 2px 0px;
+    --shadow-sm: rgba(255, 255, 255, 0.07) 0px 0px 0px 1px;
+    --shadow: rgba(255, 255, 255, 0.08) 0px 1px 3px 0px, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px;
+    --shadow-xl: rgba(255, 255, 255, 0.1) 0px 6px 24px 0px, rgba(255, 255, 255, 0.12) 0px 0px 0px 1px;
+    --shadow-xxl: rgba(255, 255, 255, 0.15) 0px 10px 50px -10px, rgba(255, 255, 255, 0.2) 0px 3px 6px -2px;
+}
+
+/* Классы теней */
+.shadow-card { box-shadow: var(--shadow-card); }
+.shadow-card-xl { box-shadow: var(--shadow-card-xl); }
+.shadow-card-xxl { box-shadow: var(--shadow-card-xxl); }
+
+.shadow-xs { box-shadow: var(--shadow-xs); }
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow); }
+.shadow-lg { box-shadow: var(--shadow-xl); }
+.shadow-xl { box-shadow: var(--shadow-xxl); }

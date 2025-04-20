@@ -1,0 +1,84 @@
+/* Контейнер для модалки и бэкдропа */
+.modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Высокий z-index для отображения поверх всего */
+    will-change: transform;
+    transform: translateZ(0);
+    transition: opacity 320ms ease;
+    backface-visibility: hidden;
+}
+/* Бэкдроп */
+.modal-wrapper:before {
+    content: '';
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--color-gray-800);
+    opacity: 0.5; /* Можно настроить прозрачность */
+    z-index: -1;
+    position: fixed;
+    will-change: opacity;
+    transition: transform 320ms ease, opacity 320ms ease; /* Анимируем transform и opacity */
+}
+
+/* Сама модалка */
+.modal {
+    position: relative; /* Относительное позиционирование относительно wrapper */
+    box-shadow: var(--shadow-card-xxl);
+    background-color: var(--color-white);
+    z-index: 1001; /* Выше бэкдропа */
+    border-radius: 4px;
+    max-width: 90vw; /* Ограничение максимальной ширины */
+    max-height: 90vh; /* Ограничение максимальной высоты */
+    overflow: hidden; /* Прокрутка при необходимости */
+    transition: transform 320ms ease, opacity 320ms ease;
+    min-width: 40rem;
+}
+.modal-closing {
+    opacity: 0 !important;
+    transition: opacity 320ms ease, transform 320ms ease;
+    transform: scale(1.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem 2rem 0 2rem;
+}
+.modal-header h2 {
+    margin: 0;
+    padding: 0 0 2rem;
+    font-size: var(--text-xl);
+}
+.modal-body {
+    padding: 0 2rem;
+}
+.modal-footer {
+    padding: 1.5rem 2rem 1.5rem 2rem;
+    margin-top: 2.2rem;
+    display: flex;
+    justify-content: end;
+    background-color: var(--color-gray-100);
+}
+.modal .button {
+    margin-left: 0.5rem;
+}
+.modal .button-secondary {
+    color: var(--color-primary);
+}
+.modal .button-secondary:hover {
+    background-color: var(--color-gray-200);
+    opacity: 0.7;
+    color: var(--color-blue-700);
+}
+.dark .modal .button-secondary {
+    color: var(--color-black);
+}

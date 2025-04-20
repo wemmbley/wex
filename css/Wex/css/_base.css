@@ -1,0 +1,173 @@
+:root {
+    /** Анимация */
+    --animate-duration: 1s;
+    --animate-delay: 1s;
+    --animate-repeat: 1;
+}
+
+html {
+    box-sizing: border-box;
+    font-size: 62.5%;
+    line-height: 1.15;
+    text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+body {
+    background-color: var(--color-bg);
+    line-height: 1.6;
+    font-size: var(--font-size);
+    color: var(--color-text-primary);
+    font-family: "Segoe UI", "Helvetica Neue", sans-serif; /* fallback */
+    font-family: var(--font-family-sans);
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 500;
+    margin: 0.35em 0 0.7em;
+}
+
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.75em;
+}
+
+h3 {
+    font-size: 1.5em;
+}
+
+h4 {
+    font-size: 1.25em;
+}
+
+h5 {
+    font-size: 1em;
+}
+
+h6 {
+    font-size: 0.85em;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+a:hover:not(.button) {
+    opacity: 0.75;
+}
+
+button {
+    font-family: inherit;
+}
+
+p {
+    margin-top: 0;
+}
+
+blockquote {
+    background-color: var(--color-bg-secondary);
+    padding: 1.5rem 2rem;
+    border-left: 3px solid var(--color-gray-400);
+}
+
+dl dt {
+    font-weight: bold;
+}
+
+hr {
+    border: none;
+    background-color: var(--color-gray-400);
+    height: 1px;
+    margin: 1rem 0;
+}
+
+table {
+    width: 100%;
+    border: none;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: left;
+}
+
+table.striped tr:nth-of-type(2n) {
+    background-color: var(--color-bg-secondary);
+}
+
+td,
+th {
+    vertical-align: middle;
+    padding: 1.2rem 0.4rem;
+}
+
+thead {
+    border-bottom: 2px solid var(--color-gray-400);
+}
+
+tfoot {
+    border-top: 2px solid var(--color-gray-400);
+}
+
+code,
+kbd,
+pre,
+samp,
+tt {
+    font-family: var(--font-family-mono);
+}
+
+code,
+kbd {
+    font-size: 90%;
+    white-space: pre-wrap;
+    border-radius: 4px;
+    padding: 0.2em 0.4em;
+    background-color: var(--color-bg-secondary);
+    color: var(--color-danger);
+}
+
+pre {
+    background-color: var(--color-bg-secondary);
+    font-size: 1em;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+}
+
+abbr[title] {
+    border-bottom: none;
+    text-decoration: underline; /* fallback */
+    text-decoration: underline dotted;
+}
+
+img {
+    max-width: 100%;
+}
+
+fieldset {
+    border: 1px solid var(--color-gray-400);
+}
+
+iframe {
+    border: 0;
+}

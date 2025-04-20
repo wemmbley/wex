@@ -1,0 +1,67 @@
+.w-auto { width: auto; }
+.w-full { width: 100%; }
+.w-screen { width: 100vw; }
+
+.h-auto { height: auto; }
+.h-full { height: 100%; }
+.h-screen { height: 100vh; }
+
+/* Фиксированная ширина */
+.w-xs { width: 4px; }
+.w-sm { width: 8px; }
+.w-md { width: 16px; }
+.w-lg { width: 32px; }
+.w-xl { width: 64px; }
+.w-2xl { width: 128px; }
+.w-3xl { width: 256px; }
+.w-4xl { width: 512px; }
+
+/* Минимальная ширина */
+.min-w-xs { min-width: 4px; }
+.min-w-sm { min-width: 8px; }
+.min-w-md { min-width: 16px; }
+.min-w-lg { min-width: 32px; }
+.min-w-xl { min-width: 64px; }
+.min-w-2xl { min-width: 128px; }
+.min-w-3xl { min-width: 256px; }
+.min-w-4xl { min-width: 512px; }
+
+/* Максимальная ширина */
+.max-w-xs { max-width: 4px; }
+.max-w-sm { max-width: 8px; }
+.max-w-md { max-width: 16px; }
+.max-w-lg { max-width: 32px; }
+.max-w-xl { max-width: 64px; }
+.max-w-2xl { max-width: 128px; }
+.max-w-3xl { max-width: 256px; }
+.max-w-4xl { max-width: 512px; }
+
+/* Фиксированная высота */
+.h-xs { height: 4px; }
+.h-sm { height: 8px; }
+.h-md { height: 16px; }
+.h-lg { height: 32px; }
+.h-xl { height: 64px; }
+.h-2xl { height: 128px; }
+.h-3xl { height: 256px; }
+.h-4xl { height: 512px; }
+
+/* Минимальная высота */
+.min-h-xs { min-height: 4px; }
+.min-h-sm { min-height: 8px; }
+.min-h-md { min-height: 16px; }
+.min-h-lg { min-height: 32px; }
+.min-h-xl { min-height: 64px; }
+.min-h-2xl { min-height: 128px; }
+.min-h-3xl { min-height: 256px; }
+.min-h-4xl { min-height: 512px; }
+
+/* Максимальная высота */
+.max-h-xs { max-height: 4px; }
+.max-h-sm { max-height: 8px; }
+.max-h-md { max-height: 16px; }
+.max-h-lg { max-height: 32px; }
+.max-h-xl { max-height: 64px; }
+.max-h-2xl { max-height: 128px; }
+.max-h-3xl { max-height: 256px; }
+.max-h-4xl { max-height: 512px; }

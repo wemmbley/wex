@@ -1,0 +1,116 @@
+.p-0 { padding: 0; }
+.m-0 { margin: 0; }
+
+/* Универсальные отступы */
+.m-xs { margin: 0.25rem; }   /* 4px */
+.m-sm { margin: 0.5rem; }    /* 8px */
+.m-md { margin: 1rem; }      /* 16px */
+.m-lg { margin: 1.5rem; }    /* 24px */
+.m-xl { margin: 2rem; }      /* 32px */
+.m-xxl { margin: 2.5rem; }   /* 40px */
+.m-2xl { margin: 3rem; }     /* 48px */
+.m-3xl { margin: 4rem; }     /* 64px */
+.m-4xl { margin: 5rem; }     /* 80px */
+
+/* Направленные отступы */
+.mt-xs { margin-top: 0.25rem; }
+.mr-xs, .me-xs { margin-right: 0.25rem; }
+.mb-xs { margin-bottom: 0.25rem; }
+.ml-xs, .ms-xs { margin-left: 0.25rem; }
+
+.mt-sm { margin-top: 0.5rem; }
+.mr-sm, .me-sm { margin-right: 0.5rem; }
+.mb-sm { margin-bottom: 0.5rem; }
+.ml-sm, .ms-sm { margin-left: 0.5rem; }
+
+.mt-md { margin-top: 1rem; }
+.mr-md, .me-md { margin-right: 1rem; }
+.mb-md { margin-bottom: 1rem; }
+.ml-md, .ms-md { margin-left: 1rem; }
+
+.mt-lg { margin-top: 1.5rem; }
+.mr-lg, .me-lg { margin-right: 1.5rem; }
+.mb-lg { margin-bottom: 1.5rem; }
+.ml-lg, .ms-lg { margin-left: 1.5rem; }
+
+.mt-xl { margin-top: 2rem; }
+.mr-xl, .me-xl { margin-right: 2rem; }
+.mb-xl { margin-bottom: 2rem; }
+.ml-xl, .ms-xl { margin-left: 2rem; }
+
+.mt-xxl { margin-top: 2.5rem; }
+.mr-xxl, .me-xxl { margin-right: 2.5rem; }
+.mb-xxl { margin-bottom: 2.5rem; }
+.ml-xxl, .ms-xxl { margin-left: 2.5rem; }
+
+.mt-2xl { margin-top: 3rem; }
+.mr-2xl, .me-2xl { margin-right: 3rem; }
+.mb-2xl { margin-bottom: 3rem; }
+.ml-2xl, .ms-2xl { margin-left: 3rem; }
+
+.mt-3xl { margin-top: 4rem; }
+.mr-3xl, .me-3xl { margin-right: 4rem; }
+.mb-3xl { margin-bottom: 4rem; }
+.ml-3xl, .ms-3xl { margin-left: 4rem; }
+
+.mt-4xl { margin-top: 5rem; }
+.mr-4xl, .me-4xl { margin-right: 5rem; }
+.mb-4xl { margin-bottom: 5rem; }
+.ml-4xl, .ms-4xl { margin-left: 5rem; }
+
+/* Универсальные паддинги */
+.p-xs { padding: 0.25rem; }
+.p-sm { padding: 0.5rem; }
+.p-md { padding: 1rem; }
+.p-lg { padding: 1.5rem; }
+.p-xl { padding: 2rem; }
+.p-xxl { padding: 2.5rem; }
+.p-2xl { padding: 3rem; }
+.p-3xl { padding: 4rem; }
+.p-4xl { padding: 5rem; }
+
+/* Направленные паддинги */
+.pt-xs { padding-top: 0.25rem; }
+.pr-xs, .pe-xs { padding-right: 0.25rem; }
+.pb-xs { padding-bottom: 0.25rem; }
+.pl-xs, .ps-xs { padding-left: 0.25rem; }
+
+.pt-sm { padding-top: 0.5rem; }
+.pr-sm, .pe-sm { padding-right: 0.5rem; }
+.pb-sm { padding-bottom: 0.5rem; }
+.pl-sm, .ps-sm { padding-left: 0.5rem; }
+
+.pt-md { padding-top: 1rem; }
+.pr-md, .pe-md { padding-right: 1rem; }
+.pb-md { padding-bottom: 1rem; }
+.pl-md, .ps-md { padding-left: 1rem; }
+
+.pt-lg { padding-top: 1.5rem; }
+.pr-lg, .pe-lg { padding-right: 1.5rem; }
+.pb-lg { padding-bottom: 1.5rem; }
+.pl-lg, .ps-lg { padding-left: 1.5rem; }
+
+.pt-xl { padding-top: 2rem; }
+.pr-xl, .pe-xl { padding-right: 2rem; }
+.pb-xl { padding-bottom: 2rem; }
+.pl-xl, .ps-xl { padding-left: 2rem; }
+
+.pt-xxl { padding-top: 2.5rem; }
+.pr-xxl, .pe-xxl { padding-right: 2.5rem; }
+.pb-xxl { padding-bottom: 2.5rem; }
+.pl-xxl, .ps-xxl { padding-left: 2.5rem; }
+
+.pt-2xl { padding-top: 3rem; }
+.pr-2xl, .pe-2xl { padding-right: 3rem; }
+.pb-2xl { padding-bottom: 3rem; }
+.pl-2xl, .ps-2xl { padding-left: 3rem; }
+
+.pt-3xl { padding-top: 4rem; }
+.pr-3xl, .pe-3xl { padding-right: 4rem; }
+.pb-3xl { padding-bottom: 4rem; }
+.pl-3xl, .ps-3xl { padding-left: 4rem; }
+
+.pt-4xl { padding-top: 5rem; }
+.pr-4xl, .pe-4xl { padding-right: 5rem; }
+.pb-4xl { padding-bottom: 5rem; }
+.pl-4xl, .ps-4xl { padding-left: 5rem; }

@@ -1,0 +1,44 @@
+:root {
+    /* Брендовые цвета */
+    --color-primary: var(--color-blue-500);
+    --color-secondary: var(--color-gray-100);
+    --color-accent: oklch(0.75 0.30 300);
+
+    /* Текст */
+    --color-text-primary: oklch(0.15 0.02 250);
+    --color-text-secondary: oklch(0.35 0.02 250);
+    --color-text-muted: oklch(0.50 0.01 250);
+    --color-text-inverse: oklch(0.98 0.01 250);
+
+    /* Фон */
+    --color-bg: oklch(0.98 0.01 250);
+    --color-bg-secondary: oklch(0.90 0.02 250);
+    --color-bg-inverse: oklch(0.15 0.02 250);
+    --color-bg-muted: oklch(0.85 0.01 250);
+
+    /* Статусные */
+    --color-success: var(--color-green-500);
+    --color-success-shadow: var(--color-green-100) 0 0 30px;
+    --color-success-shadow-dark: var(--color-green-800) 0 5px 30px, rgba(0, 0, 0, .05) 0 1px 4px;
+    --color-success-dark-hover: var(--color-green-800);
+
+    --color-warning: var(--color-yellow-500);
+    --color-danger: var(--color-red-500);
+    --color-info: var(--color-blue-500);
+
+    /* Специальные */
+    --color-highlight: oklch(0.90 0.30 90);
+    --color-disabled: oklch(0.75 0.01 250);
+    --color-selection: oklch(0.80 0.25 300);
+
+    /** Сетка */
+    --grid-maxWidth: 120rem;
+    --grid-gutter: 2rem;
+
+    /** Шрифт */
+    --font-size: 1.6rem;
+    --font-family-sans: -apple-system, "BlinkMacSystemFont", "Avenir",
+    "Avenir Next", "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+    "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    --font-family-mono: monaco, "Consolas", "Lucida Console", monospace;
+}

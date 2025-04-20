@@ -1,0 +1,185 @@
+.centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-center { justify-content: center; }
+.flex-items-center { align-items: center; }
+.flex-column { flex-direction: column; }
+
+.flex-gap-sm { gap: 0.625rem; }  /* 10px */
+.flex-gap-md { gap: 1.25rem; }   /* 20px */
+.flex-gap-lg { gap: 1.875rem; }  /* 30px */
+.flex-gap-xl { gap: 2.5rem; }    /* 40px */
+.flex-gap-2xl { gap: 3.125rem; } /* 50px */
+.flex-gap-3xl { gap: 4.375rem; } /* 70px */
+
+.position-absolute { position: absolute; }
+.position-fixed { position: fixed; }
+.position-relative { position: relative; }
+.position-sticky { position: sticky; }
+.position-inherit { position: inherit; }
+
+.m-auto {
+    margin: 0 auto !important;
+    float: none !important;
+}
+.text-center { text-align: center; }
+
+.glass {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.09);
+}
+
+/*
+ * Widths and heights.
+ */
+.h-100vh {
+    height: 100vh;
+}
+.upper {
+    text-transform: uppercase;
+}
+.lower {
+    text-transform: lowercase;
+}
+/*
+ * Display elements utils.
+ */
+.none {
+    display: none;
+}
+.flex {
+    display: flex;
+}
+.grid {
+    display: grid;
+}
+.inline-block {
+    display: inline-block;
+}
+.block {
+    display: block;
+}
+
+/**
+ * Borders.
+ */
+.border-xs { border-radius: 4px; } /* Soft Touch */
+.border-sm { border-radius: 6px; } /* Subtle Edge */
+.border-md { border-radius: 8px; } /* Gentle Curve */
+.border-xl { border-radius: 12px; } /* Smooth Corner */
+.border-2xl{ border-radius: 16px; } /* Comfort Fit */
+.border-3xl { border-radius: 20px; } /* Balanced Flow */
+.border-pill { border-radius: 9999px; } /* Pill Shape */
+.border-capsule { border-radius: 50px; } /* Capsule Look */
+.border-bubble { border-radius: 32px; } /* Bubble Soft */
+
+/*
+ * Hide elements utils.
+ */
+.hide {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: fixed !important; /* Изменяем на fixed */
+    top: 50%; /* Центрируем по вертикали */
+    left: 50%; /* Центрируем по горизонтали */
+    transform: translate(-50%, -50%); /* Корректируем смещение */
+    width: 100%;
+    height: 100%;
+    overflow: hidden !important;
+    transition: opacity 320ms ease;
+}
+
+@media screen and (max-width: 599px) {
+    .hide-sm {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+}
+@media screen and (min-width: 600px) and (max-width: 899px) {
+    .hide-md {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+}
+@media screen and (min-width: 900px) and (max-width: 1199px) {
+    .hide-lg {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .hide-xl {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+}
+@media screen and (max-width: 599px) {
+    .show-sm {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        visibility: visible !important;
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+}
+@media screen and (min-width: 600px) and (max-width: 899px) {
+    .show-md {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        visibility: visible !important;
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+}
+@media screen and (min-width: 900px) and (max-width: 1199px) {
+    .show-lg {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        visibility: visible !important;
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+}
+@media screen and (min-width: 1200px) {
+    .show-xl {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        visibility: visible !important;
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+}

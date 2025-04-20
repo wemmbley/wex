@@ -1,0 +1,7 @@
+accordion
+panel-tabs
+
+carousel (product slider)
+gallery (product page)
+stepper (future, for checkout)
+image-zoom

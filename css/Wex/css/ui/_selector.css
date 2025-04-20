@@ -1,0 +1,51 @@
+/*<div class="radio-wrapper-19">*/
+/*<div class="radio-inputs-19">*/
+/*<label for="example-19-1">*/
+/*<input id="example-19-1" type="radio" name="radio-examples">*/
+/*<span class="name">Tab 1</span>*/
+/*</label>*/
+/*<label for="example-19-2">*/
+/*<input id="example-19-2" type="radio" name="radio-examples">*/
+/*<span class="name">Tab 2</span>*/
+/*</label>*/
+/*</div>*/
+/*</div>*/
+
+ .radio-inputs-19 {
+     position: relative;
+     display: flex;
+     flex-wrap: wrap;
+     border-radius: 0.5rem;
+     background-color: #EEE;
+     box-sizing: border-box;
+     box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
+     padding: 0.25rem;
+     width: 150px;
+     font-size: 14px;
+ }
+
+.radio-inputs-19 label {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+.radio-inputs-19 label input {
+    display: none;
+}
+
+.radio-inputs-19 label .name {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    border: none;
+    padding: .5rem 0;
+    color: rgba(51, 65, 85, 1);
+    transition: all .15s ease-in-out;
+}
+
+.radio-inputs-19 label input:checked + .name {
+    background-color: #fff;
+    font-weight: 600;
+}
