@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <template id="component-test">
+        <my-button>Welcome!</my-button>
+    </template>
+</body>
+<footer>
+  <script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
+  <script src="../../dist/wex.js"></script>
+    <script>
+        $('#component-test')
+            .state()
+            .component('my-button', 'button.html')
+            .mount()
+    </script>
+</footer>
+</html>

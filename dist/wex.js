@@ -168,6 +168,10 @@ if (typeof window !== 'undefined') {
 /* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9);
 /* harmony import */ var _store__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(15);
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -717,6 +721,27 @@ function vm() {
   var filters = _objectSpread({}, globalFilters);
   var fns = {};
   function component(name, compile, affect) {
+    // component('my-button', './components/button.html')
+    if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isString */ "n"])(compile)) {
+      var entry = loadRemote(compile);
+      var placeholder = function placeholder() {
+        return entry.view || '';
+      };
+      placeholder.remote = entry;
+      compile = placeholder;
+    }
+
+    // регистрируем родителя (и его клоны, ведь clone()
+    // прокидывает ту же функцию)
+    if (compile && compile.remote) {
+      var _compile2 = compile,
+        remote = _compile2.remote;
+      if (remote.view) {
+        view.update(true);
+      } else {
+        remote.waiters.add(view);
+      }
+    }
     _push(components, name, compile, affect);
     if (compile && compile instanceof View) {
       view.on('$beforeDestroy', function () {
@@ -724,6 +749,86 @@ function vm() {
       });
     }
     return view;
+  }
+  var nativeImport = new Function('u', 'return import(u)');
+  var remoteCache = {};
+  function loadRemote(url) {
+    if (remoteCache[url]) {
+      return remoteCache[url];
+    }
+    var entry = remoteCache[url] = {
+      view: null,
+      waiters: new Set()
+    };
+    fetch(url).then(function (r) {
+      if (!r.ok) {
+        throw new Error("Wex: cannot load component ".concat(url, " (").concat(r.status, ")"));
+      }
+      return r.text();
+    }).then(/*#__PURE__*/function () {
+      var _ref8 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(html) {
+        var _doc$querySelector;
+        var doc, tpl, $tpl, code, view, blobUrl, mod;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.p = _context.n) {
+            case 0:
+              doc = new DOMParser().parseFromString(html, 'text/html');
+              tpl = doc.querySelector('template');
+              if (tpl) {
+                _context.n = 1;
+                break;
+              }
+              throw new Error("Wex: no <template> in ".concat(url));
+            case 1:
+              $tpl = $("<template>".concat(tpl.innerHTML, "</template>"));
+              code = (_doc$querySelector = doc.querySelector('script[type="module"]')) === null || _doc$querySelector === void 0 ? void 0 : _doc$querySelector.textContent;
+              view = null;
+              if (!code) {
+                _context.n = 6;
+                break;
+              }
+              blobUrl = URL.createObjectURL(new Blob([code], {
+                type: 'text/javascript'
+              }));
+              _context.p = 2;
+              _context.n = 3;
+              return nativeImport(blobUrl);
+            case 3:
+              mod = _context.v;
+              view = mod["default"]($tpl);
+            case 4:
+              _context.p = 4;
+              URL.revokeObjectURL(blobUrl);
+              return _context.f(4);
+            case 5:
+              _context.n = 7;
+              break;
+            case 6:
+              view = $tpl.vm();
+            case 7:
+              if (view instanceof View) {
+                _context.n = 8;
+                break;
+              }
+              throw new Error("Wex: ".concat(url, " must export default a function returning a view"));
+            case 8:
+              entry.view = view;
+              entry.waiters.forEach(function (v) {
+                return v.update(true);
+              });
+              entry.waiters.clear();
+            case 9:
+              return _context.a(2);
+          }
+        }, _callee, null, [[2,, 4, 5]]);
+      }));
+      return function (_x) {
+        return _ref8.apply(this, arguments);
+      };
+    }())["catch"](function (e) {
+      return console.error(e);
+    });
+    return entry;
   }
   function directive(name, compile, affect) {
     _push(directives, name, compile, affect);
@@ -1039,11 +1144,11 @@ function vm() {
         var _event = item.event,
           _selector = item.selector,
           handle = item.handle;
-        var _args2 = [_event, _selector, handle].filter(Boolean);
+        var _args3 = [_event, _selector, handle].filter(Boolean);
         if (_event[0] === '$') {
-          $template.off.apply($template, _toConsumableArray(_args2));
+          $template.off.apply($template, _toConsumableArray(_args3));
         } else {
-          $root.off.apply($root, _toConsumableArray(_args2));
+          $root.off.apply($root, _toConsumableArray(_args3));
         }
         actions.splice(i, 1);
       }
@@ -1117,6 +1222,9 @@ function vm() {
   function find(selector) {
     var $root = getMountNode();
     return $root.find(selector);
+  }
+  function method(name, action) {
+    return fn(name, action);
   }
   function fn(name, action) {
     if (!action) {
@@ -1213,6 +1321,7 @@ function vm() {
     filter: filter,
     plugin: plugin,
     fn: fn,
+    method: method,
     clone: clone
   });
   var tempEl = $template[0];

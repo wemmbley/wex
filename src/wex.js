@@ -544,11 +544,86 @@ function vm(initState = {}) {
   const fns = {}
 
   function component(name, compile, affect) {
+    // component('my-button', './components/button.html')
+    if (isString(compile)) {
+      const entry = loadRemote(compile)
+      const placeholder = () => entry.view || ''
+      placeholder.remote = entry
+      compile = placeholder
+    }
+
+    // регистрируем родителя (и его клоны, ведь clone()
+    // прокидывает ту же функцию)
+    if (compile && compile.remote) {
+      const { remote } = compile
+      if (remote.view) {
+        view.update(true)
+      }
+      else {
+        remote.waiters.add(view)
+      }
+    }
+
     _push(components, name, compile, affect)
     if (compile && compile instanceof View) {
       view.on('$beforeDestroy', () => compile.destroy())
     }
     return view
+  }
+
+  const nativeImport = new Function('u', 'return import(u)')
+  const remoteCache = {}
+
+  function loadRemote(url) {
+    if (remoteCache[url]) {
+      return remoteCache[url]
+    }
+
+    const entry = remoteCache[url] = { view: null, waiters: new Set() }
+
+    fetch(url)
+        .then((r) => {
+          if (!r.ok) {
+            throw new Error(`Wex: cannot load component ${url} (${r.status})`)
+          }
+          return r.text()
+        })
+        .then(async (html) => {
+          const doc = new DOMParser().parseFromString(html, 'text/html')
+          const tpl = doc.querySelector('template')
+          if (!tpl) {
+            throw new Error(`Wex: no <template> in ${url}`)
+          }
+
+          const $tpl = $(`<template>${tpl.innerHTML}</template>`)
+          const code = doc.querySelector('script[type="module"]')?.textContent
+
+          let view = null
+          if (code) {
+            const blobUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))
+            try {
+              const mod = await nativeImport(blobUrl)
+              view = mod.default($tpl)
+            }
+            finally {
+              URL.revokeObjectURL(blobUrl)
+            }
+          }
+          else {
+            view = $tpl.vm()
+          }
+
+          if (!(view instanceof View)) {
+            throw new Error(`Wex: ${url} must export default a function returning a view`)
+          }
+
+          entry.view = view
+          entry.waiters.forEach(v => v.update(true))
+          entry.waiters.clear()
+        })
+        .catch(e => console.error(e))
+
+    return entry
   }
 
   function directive(name, compile, affect) {
@@ -976,6 +1051,9 @@ function vm(initState = {}) {
     return $root.find(selector)
   }
 
+  function method(name,action) {
+    return fn(name,action)
+  }
 
   function fn(name, action) {
     if (!action) {
@@ -1064,6 +1142,7 @@ function vm(initState = {}) {
     filter,
     plugin,
     fn,
+    method,
     clone,
   })
 

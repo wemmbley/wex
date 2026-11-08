@@ -1752,6 +1752,54 @@ $('#app')
 Один раз описали карточку товара, кнопку или иконку — и вставляете их в 
 любое место как обычный HTML-тег. WEX сам разберётся как это отрисовать.
 
+## Загружаемые компоненты по URL'у
+
+Пример готового компонента `Button.html`: 
+```html 
+<template>
+    <slot></slot>
+    <br>
+    <button class="btn">
+        {{ label }}: {{ count }}
+    </button>
+</template>
+
+<script type="module">
+    export default ($component) => $component
+        .state({
+            label: 'Кликов',
+            count: 0
+        })
+        .method('buy', state => () => {
+            state.count++
+        })
+        .on('click', '.btn', function (state) {
+            return this.method('buy')(state)
+        })
+</script>
+```
+Как видите, ничего сложного. Разница от обычного кода в 
+`<script type="module">` и вместо обычной инициализации 
+мы пишем `export default ($component) => $component`. 
+
+Вызов компонента внутри ДРУГОГО файла `Index.html`:
+```html
+<template id="component-test">
+    <my-button>Welcome!</my-button>
+</template>
+
+<script>
+    $('#component-test')
+        .state()
+        .component('my-button', 'button.html')
+        .mount()
+</script>
+```
+Как видим, ничего сложного. Указываем имя компонента и его ссылку 
+прямую или относительную - `.component('my-button', 'button.html')`.
+
+# Компоненты внутри единой страницы
+
 ## Первый компонент — иконка
 
 Представьте что по всему сайту используются иконки, и каждый раз писать 
