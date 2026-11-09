@@ -13,7 +13,7 @@ Wex - это реактивный CDN фронтенд фреймворк. Он 
 
 ```html 
 <script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/wemmbley/wex-js@master/dist/wex.min.js"></script>
+<script src="https://cbcdn.githack.com/wemmbley/wex/raw/branch/master/dist/wex.min.js"></script>
 ```
 
 ## Философия
@@ -68,15 +68,15 @@ Wex - это реактивный CDN фронтенд фреймворк. Он 
 `Index.html`:
 ```html
 <template id="app">
-    <test-component varStatic="123" :varDynamic="myVar">
+    <testComponent varStatic="123" :varDynamic="myVar">
         Содержимое слота
-    </test-component>
+    </testComponent>
 </template>
 
 <script>
     $('#app')
        .state({ myVar: 'test' })
-       .component('test-component', 'Components/MyComponent.html')
+       .component('testComponent', 'Components/MyComponent.html')
        .mount()
 </script>
 ```

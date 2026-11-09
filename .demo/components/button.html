@@ -1,21 +1,15 @@
 <template>
     <slot></slot>
-    <br>
-    <button class="btn">
-        {{ label }}: {{ count }}
-    </button>
+    <p>Встроенный стейт: {{ myState }}</p>
+    <p>Статический пропс: {{ varStatic }}</p>
+    <p>Динамический пропс: {{ varDynamic }}</p>
 </template>
 
 <script type="module">
     export default ($component) => $component
         .state({
-            label: 'Кликов',
-            count: 0
-        })
-        .method('buy', state => () => {
-            state.count++
-        })
-        .on('click', '.btn', function (state) {
-            return this.method('buy')(state)
+            myState: 'Кнопка',
+            varStatic: '',
+            varDynamic: '',
         })
 </script>

@@ -46,6 +46,61 @@ export function filter(name, fn) {
   globalFilters[name] = fn
 }
 
+const nativeImport = new Function('u', 'return import(u)') // в обход бандлера
+const remoteCache = {}
+
+function loadRemote(url) {
+  if (remoteCache[url]) {
+    return remoteCache[url]
+  }
+
+  const entry = remoteCache[url] = { view: null, waiters: new Set() }
+
+  fetch(url)
+      .then((r) => {
+        if (!r.ok) {
+          throw new Error(`Wex: cannot load component ${url} (${r.status})`)
+        }
+        return r.text()
+      })
+      .then(async (html) => {
+        const doc = new DOMParser().parseFromString(html, 'text/html')
+        const tpl = doc.querySelector('template')
+        if (!tpl) {
+          throw new Error(`Wex: no <template> in ${url}`)
+        }
+
+        const $tpl = $(`<template>${tpl.innerHTML}</template>`)
+        const code = doc.querySelector('script[type="module"]')?.textContent
+
+        let view = null
+        if (code) {
+          const blobUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))
+          try {
+            const mod = await nativeImport(blobUrl)
+            view = mod.default($tpl)
+          }
+          finally {
+            URL.revokeObjectURL(blobUrl)
+          }
+        }
+        else {
+          view = $tpl.vm()
+        }
+
+        if (!(view instanceof View)) {
+          throw new Error(`Wex: ${url} must export default a function returning a view`)
+        }
+
+        entry.view = view
+        entry.waiters.forEach(v => v.update(true))
+        entry.waiters.clear()
+      })
+      .catch(e => console.error(e))
+
+  return entry
+}
+
 // ----------- compiler ---------------
 
 // clear and revoke effects
@@ -552,8 +607,6 @@ function vm(initState = {}) {
       compile = placeholder
     }
 
-    // регистрируем родителя (и его клоны, ведь clone()
-    // прокидывает ту же функцию)
     if (compile && compile.remote) {
       const { remote } = compile
       if (remote.view) {
@@ -661,21 +714,32 @@ function vm(initState = {}) {
   // -------------
 
   const assignOutsideState = (state, outsideState, init) => {
-    const next = filterProps(outsideState, (value, key) => {
-      if (!state) {
-        return false
-      }
-      if (!(key in state)) {
-        return false
-      }
-      if (init) {
-        return true
-      }
-      if (outside && isShallowEqual(outside[key], value)) {
-        return false
-      }
-      return true
+    if (!state) {
+      return
+    }
+
+    // HTML приводит имена атрибутов к нижнему регистру
+    const keys = {}
+    Object.keys(state).forEach((k) => {
+      keys[k.toLowerCase()] = k
     })
+
+    const next = {}
+    each(outsideState, (value, key) => {
+      // события (@...) в стейт не попадают
+      if (key[0] === '@') {
+        return
+      }
+      const realKey = key in state ? key : keys[key.toLowerCase()]
+      if (!realKey) {
+        return
+      }
+      if (!init && outside && isShallowEqual(outside[key], value)) {
+        return
+      }
+      next[realKey] = value
+    })
+
     Object.assign(state, next)
   }
 
@@ -987,9 +1051,14 @@ function vm(initState = {}) {
 
   function emit(event, ...args) {
     // trigger those passed to components, only works for components
-    if (outside && isFunction(outside['@' + event])) {
-      const fn = outside['@' + event]
-      fn(...args)
+    if (outside) {
+      const lower = ('@' + event).toLowerCase()
+      const key = ('@' + event) in outside
+          ? '@' + event
+          : Object.keys(outside).find(k => k.toLowerCase() === lower)
+      if (key && isFunction(outside[key])) {
+        outside[key](...args)
+      }
     }
 
     // only works for events begin with $
@@ -1142,7 +1211,7 @@ function vm(initState = {}) {
     filter,
     plugin,
     fn,
-    method,
+    method: fn,
     clone,
   })
 
