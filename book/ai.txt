@@ -223,7 +223,7 @@ TODO-Приложения, казалось бы, достаточно легк�
         }))
 
         // Кнопка добавить
-        .fn('addTodo', function (state) {
+        .method('addTodo', function (state) {
             // Наш инупт забинжен через w-bind="newTodo", данные сразу тут будут
             let inputText = state.newTodo.trim()
 
@@ -237,7 +237,7 @@ TODO-Приложения, казалось бы, достаточно легк�
         })
 
         // Кнопка удалить
-        .fn('remove', function (state, id) {
+        .method('remove', function (state, id) {
             
             // формируем список новых тудушек, покаместь пустой
             let newTodos = []
@@ -843,7 +843,7 @@ WEX использует его при диффинге — чтобы точн�
 <script>
     $('#app')
       .state({ message: '', sent: false })
-      .fn('handleSubmit', state => function(e) {
+      .method('handleSubmit', state => function(e) {
           state.sent = true;
       })
       .mount()
@@ -870,16 +870,16 @@ WEX использует его при диффинге — чтобы точн�
 <script>
     $('#app')
       .state({ query: '', result: '' })
-      .fn('onSearch', state => function(e) {
+      .method('onSearch', state => function(e) {
           state.result = state.query.length > 0
               ? `Ищем: "${state.query}"`
               : '';
       })
-      .fn('onClear', state => function(e) {
+      .method('onClear', state => function(e) {
           state.query  = '';
           state.result = '';
       })
-      .fn('onSubmit', state => function(e) {
+      .method('onSubmit', state => function(e) {
           state.result = `Запрос отправлен: "${state.query}"`;
       })
       .mount()
@@ -909,7 +909,7 @@ WEX использует его при диффинге — чтобы точн�
               { id: 3, name: 'Сыр',    qty: 3 },
           ]
       })
-      .fn('onRemove', state => function(e) {
+      .method('onRemove', state => function(e) {
           const btn   = $(this);
           const index = btn.closest('[w-for]').index();
           state.cart.splice(index, 1);
@@ -1103,7 +1103,7 @@ WEX берёт HTML-строку из вашего `<template>` и строит 
 component(
   'w-static',
   () => $('<template><slot></slot></template>')
-    .vm()
+    .state()
     .on('$update', () => (e, state, prevent) => {
       prevent()  // ← просто говорит "не надо меня перерисовывать"
     })
@@ -1887,7 +1887,7 @@ const productCard = $(`
       price: 0,
       image: '',
   }))
-  .fn('buy', state => function(e) {
+  .method('buy', state => function(e) {
       alert(`Добавлено в корзину: ${state.name}`)
   })
   .on('click', '.buy-btn', function(state) {
@@ -1961,7 +1961,7 @@ component('counter', counter)
 <script>
     $('#app')
       .state({ total: 0 })
-      .fn('onCountChange', state => function(newCount) {
+      .method('onCountChange', state => function(newCount) {
           state.total = newCount
       })
       .mount()
@@ -2074,8 +2074,8 @@ WEX добавляет жизнь туда где она нужна.
 {{-- Это серверный HTML — поисковик его прочитает --}}
 @foreach($products as $product)
     <div class="product-card">
-        <h2>{{ $product->name }}</h2>
-        <p>{{ $product->price }} ₽</p>
+        <h2>@{{ $product->name }}</h2>
+        <p>@{{ $product->price }} ₽</p>
     </div>
 @endforeach
 
@@ -2232,14 +2232,14 @@ view.filter('number', function(value, fixed) {
 
 <script>
     $('#app')
-            .state({ price: 1990.5, oldPrice: 2500 })
-            .filter('currency', function(value) {
-                return value.toLocaleString('ru-RU', {
-                    style: 'currency',
-                    currency: 'RUB'
-                })
+        .state({ price: 1990.5, oldPrice: 2500 })
+        .filter('currency', function(value) {
+            return value.toLocaleString('ru-RU', {
+                style: 'currency',
+                currency: 'RUB'
             })
-            .mount()
+        })
+        .mount()
 
     // Выведет: 1 990,50 ₽ и 2 500,00 ₽
 </script>
@@ -2497,7 +2497,7 @@ URL выглядит как site.ru/catalog.
     $('#app')
         .state()
         .plugin(router)
-        .fn('nextPage', function() {
+        .method('nextPage', function() {
             const { $router } = this
             return () => {
                 const { params } = $router.getLocation()
@@ -2812,15 +2812,15 @@ view.on('click', '.btn', function action(state, ...args) {
 - `.once(event, selector?, action)` — то же что `.on()` но сработает только один раз. Аналог jQuery `.one()`.
 - `.off(event, selector?, action)` — отписаться от события навешенного через `.on()`.
 
-## fn — именованные функции
-- `.fn()` регистрирует функцию на вью по имени. Нужно для w-on директивы и для компонентных событий `@`:
+## method — именованные функции
+- `.method()` регистрирует функцию на вью по имени. Нужно для w-on директивы и для компонентных событий `@`:
 ```js 
 $('#app')
   .state({ query: '' })
-  .fn('handleSearch', state => function(e) {
+  .method('handleSearch', state => function(e) {
       state.query = $(this).val()
   })
-  .fn('handleClear', state => () => {
+  .method('handleClear', state => () => {
       state.query = ''
   })
   .mount()

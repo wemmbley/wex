@@ -26,7 +26,7 @@
         }))
 
         // Кнопка добавить
-        .fn('addTodo', function (state) {
+        .method('addTodo', function (state) {
             // Наш инупт забинжен через w-bind="newTodo", данные сразу тут будут
             let inputText = state.newTodo.trim()
 
@@ -40,7 +40,7 @@
         })
 
         // Кнопка удалить
-        .fn('remove', function (state, id) {
+        .method('remove', function (state, id) {
 
             // формируем список новых тудушек, покаместь пустой
             let newTodos = []

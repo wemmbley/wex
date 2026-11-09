@@ -47,24 +47,36 @@ Wex - это реактивный CDN фронтенд фреймворк. Он 
 ## Примеры кода
 
 ### ⚡Использование компонентов отдельно из другого HTML-файла! (работает на GitHub Pages!)
-`Components/Button.html`:
+`Components/MyComponent.html`:
 ```html 
 <template>
-    <button class="button">
-        <slot></slot>
-    </button>
+    <slot></slot>
+    <p>Встроенный стейт: {{ myState }}</p>
+    <p>Статический пропс: {{ varStatic }}</p>
+    <p>Динамический пропс: {{ varDynamic }}</p>
 </template>
+
+<script type="module">
+    export default ($component) => $component
+        .state({
+            myState: 'Кнопка',
+            varStatic: '', 
+            varDynamic: '',
+        })
+</script>
 ```
 `Index.html`:
 ```html
 <template id="app">
-    <my-button>Купить</my-button>
+    <test-component varStatic="123" :varDynamic="myVar">
+        Содержимое слота
+    </test-component>
 </template>
 
 <script>
     $('#app')
-       .state()
-       .component('my-button', 'Components/Button.html')
+       .state({ myVar: 'test' })
+       .component('test-component', 'Components/MyComponent.html')
        .mount()
 </script>
 ```
@@ -143,6 +155,30 @@ $('#score')
 </script>
 ```
 
+### 🐢 Объявление собственных методов (замена on-событиям)
+
+```html 
+<template id="app">
+    <p>Count: {{ count }}</p>
+    <button w-on="click:increase">Increase</button>
+    <button w-on="click:decrease">Decrease</button>
+</template>
+
+<script>
+    $('#app')
+        .state({ count: 0 })
+        .method('increase', () => {
+            state.count += 1;
+        })
+        .method('decrease', () => {
+            if(state.count >= 1) {
+                state.count += 1; 
+            }
+        })
+        .mount()
+</script>
+```
+
 ### ☄️ Модалки Bootstrap 5 из коробки с глубокой интеграцией в стейт.
 
 Не забудьте подключить сам Bootstrap 5 перед использованием.
@@ -172,6 +208,75 @@ $('#app')
         }
     })
     .mount()
+```
+
+### 🐳 TODO-Лист (сборка всего функционала Wex в одном месте)
+
+```html 
+<template id="app">
+    <div>
+        <input w-bind="newTodo" placeholder="Новая задача..." />
+        <button w-on="click:addTodo">Добавить</button>
+
+        <div w-for="todo,index in todos traceby todo.id">
+            <span>{{ todo.text }}</span>
+            <button w-on="click:remove(todo.id)">Удалить</button>
+        </div>
+    </div>
+</template>
+
+<script>
+    // Выбираем элемент для монтирования
+    $('#app')
+
+        // Обьявляем реактивный стейт
+        .state(() => ({
+            newTodo: '',
+            todos: [],
+        }))
+
+        // Кнопка добавить
+        .method('addTodo', function (state) {
+            // Наш инупт забинжен через w-bind="newTodo", данные сразу тут будут
+            let inputText = state.newTodo.trim()
+
+            let newTodo = {
+                id: Date.now(), // даём уникальный ид
+                text: inputText // заносим сюда текст из инпута
+            }
+
+            state.todos.push(newTodo) // пушим наш новый туду в стейт
+            state.newTodo = '' // очищаем инпут, ведь он забинжен и очистится вместе со стейтом
+        })
+
+        // Кнопка удалить
+        .method('remove', function (state, id) {
+
+            // формируем список новых тудушек, покаместь пустой
+            let newTodos = []
+
+            // пробегаемся по текущим тудушкам чтобы вычислить все айдишники
+            for (let i = 0; i < state.todos.length; i++) {
+
+                // создаём новую локальную переменную с текущей тудушкой
+                let todo = state.todos[i]
+
+                // проверяем что текущая тудушка из нашей for-крутилки
+                // не равна айдишнику удаляемой тудушки
+                if (todo.id !== id) {
+
+                    // все остальные тудушки кроме текущей удаляемой добавляем в новый список
+                    newTodos.push(todo)
+                }
+            }
+
+            // реактивно обновляем стейт новыми тудушками без той что мы удалили
+            state.todos = newTodos
+        })
+
+        // Монтируем
+        .mount()
+</script>
 ```
 
 За бОльшим количеством примеров обращайтесь в официальную книгу сообщества в папке `book`.
