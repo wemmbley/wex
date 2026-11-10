@@ -1465,6 +1465,34 @@ directive('w-for', function ($el, attrs) {
   var $commentEnd = $("<!-- ".concat(nodeName, " w-for=\"").concat(attr, "\" end -->"));
   $el.replaceWith([$commentBegin].concat($els, [$commentEnd]));
 });
+function sanitizeSvg(str) {
+  var tpl = document.createElement('template');
+  tpl.innerHTML = str;
+  tpl.content.querySelectorAll('script,foreignObject,iframe,object,embed,style,animate,set').forEach(function (n) {
+    return n.remove();
+  });
+  tpl.content.querySelectorAll('*').forEach(function (el) {
+    ;
+    _toConsumableArray(el.attributes).forEach(function (_ref0) {
+      var name = _ref0.name,
+        value = _ref0.value;
+      var n = name.toLowerCase();
+      var v = value.trim().toLowerCase();
+      var badHref = (n === 'href' || n === 'xlink:href') && !v.startsWith('#');
+      if (n.startsWith('on') || badHref) {
+        el.removeAttribute(name);
+      }
+    });
+  });
+  return tpl.innerHTML;
+}
+directive('w-html', function ($el, attrs) {
+  // принимаем и w-html="item.icon", и w-html="{{ item.icon }}"
+  var exp = attrs['w-html'].replace(/^\{\{\s*|\s*\}\}$/g, '');
+  var html = this.scope.parse(exp);
+  $el.removeAttr('w-html');
+  $el.html(sanitizeSvg(Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isNone */ "j"])(html) ? '' : String(html)));
+});
 directive('w-if', function ($el, attrs) {
   var attr = attrs['w-if'];
   var value = this.scope.parse(attr);

@@ -1267,7 +1267,35 @@ directive('w-for', function($el, attrs) {
 
   $el.replaceWith([$commentBegin, ...$els, $commentEnd])
 })
+function sanitizeSvg(str) {
+  const tpl = document.createElement('template')
+  tpl.innerHTML = str
 
+  tpl.content
+      .querySelectorAll('script,foreignObject,iframe,object,embed,style,animate,set')
+      .forEach(n => n.remove())
+
+  tpl.content.querySelectorAll('*').forEach((el) => {
+    ;[...el.attributes].forEach(({ name, value }) => {
+      const n = name.toLowerCase()
+      const v = value.trim().toLowerCase()
+      const badHref = (n === 'href' || n === 'xlink:href') && !v.startsWith('#')
+      if (n.startsWith('on') || badHref) {
+        el.removeAttribute(name)
+      }
+    })
+  })
+
+  return tpl.innerHTML
+}
+directive('w-html', function ($el, attrs) {
+  // принимаем и w-html="item.icon", и w-html="{{ item.icon }}"
+  const exp = attrs['w-html'].replace(/^\{\{\s*|\s*\}\}$/g, '')
+  const html = this.scope.parse(exp)
+
+  $el.removeAttr('w-html')
+  $el.html(sanitizeSvg(isNone(html) ? '' : String(html)))
+})
 directive('w-if', function($el, attrs) {
   const attr = attrs['w-if']
   const value = this.scope.parse(attr)
