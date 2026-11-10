@@ -27,7 +27,7 @@ function _push(list, name, compile, affect, priority = 10) {
       return
     }
     if (item[3] < priority) {
-      list.splice(i - 1, [name, compile, affect, priority])
+      list.splice(i, 0, [name, compile, affect, priority])
       return
     }
   }
@@ -713,30 +713,24 @@ function vm(initState = {}) {
 
   // -------------
 
-  const assignOutsideState = (state, outsideState, init) => {
-    if (!state) {
-      return
-    }
+  const outsideHashes = {}
 
-    // HTML приводит имена атрибутов к нижнему регистру
+  const assignOutsideState = (state, outsideState, init) => {
+    if (!state) return
+
     const keys = {}
-    Object.keys(state).forEach((k) => {
-      keys[k.toLowerCase()] = k
-    })
+    Object.keys(state).forEach((k) => { keys[k.toLowerCase()] = k })
 
     const next = {}
     each(outsideState, (value, key) => {
-      // события (@...) в стейт не попадают
-      if (key[0] === '@') {
-        return
-      }
+      if (key[0] === '@') return
       const realKey = key in state ? key : keys[key.toLowerCase()]
-      if (!realKey) {
-        return
-      }
-      if (!init && outside && isShallowEqual(outside[key], value)) {
-        return
-      }
+      if (!realKey) return
+
+      const hash = getObjectHash(value)
+      if (!init && outsideHashes[key] === hash) return
+      outsideHashes[key] = hash
+
       next[realKey] = value
     })
 

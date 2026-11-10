@@ -212,7 +212,7 @@ function _push(list, name, compile, affect) {
       return;
     }
     if (item[3] < priority) {
-      list.splice(i - 1, [name, compile, affect, priority]);
+      list.splice(i, 0, [name, compile, affect, priority]);
       return;
     }
   }
@@ -802,7 +802,7 @@ function vm() {
   var fns = {};
   function component(name, compile, affect) {
     // component('my-button', './components/button.html')
-    if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isString */ "n"])(compile)) {
+    if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isString */ "m"])(compile)) {
       var entry = loadRemote(compile);
       var placeholder = function placeholder() {
         return entry.view || '';
@@ -938,29 +938,21 @@ function vm() {
 
   // -------------
 
+  var outsideHashes = {};
   var assignOutsideState = function assignOutsideState(state, outsideState, init) {
-    if (!state) {
-      return;
-    }
-
-    // HTML приводит имена атрибутов к нижнему регистру
+    if (!state) return;
     var keys = {};
     Object.keys(state).forEach(function (k) {
       keys[k.toLowerCase()] = k;
     });
     var next = {};
     Object(ts_fns__WEBPACK_IMPORTED_MODULE_3__[/* each */ "b"])(outsideState, function (value, key) {
-      // события (@...) в стейт не попадают
-      if (key[0] === '@') {
-        return;
-      }
+      if (key[0] === '@') return;
       var realKey = key in state ? key : keys[key.toLowerCase()];
-      if (!realKey) {
-        return;
-      }
-      if (!init && outside && Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isShallowEqual */ "m"])(outside[key], value)) {
-        return;
-      }
+      if (!realKey) return;
+      var hash = Object(ts_fns__WEBPACK_IMPORTED_MODULE_3__[/* getObjectHash */ "c"])(value);
+      if (!init && outsideHashes[key] === hash) return;
+      outsideHashes[key] = hash;
       next[realKey] = value;
     });
     Object.assign(state, next);
@@ -1017,7 +1009,7 @@ function vm() {
         } else if (key === 'style') {
           if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isObject */ "l"])(value)) {
             $root.css(value);
-          } else if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isString */ "n"])(value)) {
+          } else if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isString */ "m"])(value)) {
             var style = $root.attr('style') || '';
             var rules = style.split(';').concat(value.split(';')).filter(function (item) {
               return !!item;
@@ -4190,7 +4182,7 @@ function parseKey(str) {
   var _matched = _slicedToArray(matched, 4),
     name = _matched[1],
     _params = _matched[3];
-  var params = Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isString */ "n"])(_params) ? _params.split(',').map(function (item) {
+  var params = Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isString */ "m"])(_params) ? _params.split(',').map(function (item) {
     return item.trim();
   }).filter(function (item) {
     return !!item;
@@ -4622,7 +4614,7 @@ function iterate(obj, fn) {
     for (var i = 0, len = obj.length; i < len; i++) {
       var item = obj[i];
       var res = fn(item, i, obj);
-      if (!Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "p"])(res)) {
+      if (!Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "o"])(res)) {
         return res;
       }
     }
@@ -4632,7 +4624,7 @@ function iterate(obj, fn) {
       var _key = keys[_i];
       var value = obj[_key];
       var _res = fn(value, _key, obj);
-      if (!Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "p"])(_res)) {
+      if (!Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "o"])(_res)) {
         return _res;
       }
     }
@@ -4820,7 +4812,7 @@ function createReactive(origin) {
           active: none,
           prev: prev,
           invalid: invalid
-        }, Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "p"])(prev));
+        }, Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "o"])(prev));
       }
     };
     var put = function put(key, value, trigger) {
@@ -5325,20 +5317,20 @@ function createProxy(origin) {
     var proxy = new Proxy(media, {
       get: function get(target, key, receiver) {
         // get original property value
-        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(key) && key === ProxySymbol) {
+        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(key) && key === ProxySymbol) {
           return origin;
         }
 
         // primitive property
         // such as 'a' + obj, and obj[Symbol.toPrimitive](hint) defined
-        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(key) && getSymbolContent(key).indexOf('Symbol.') === 0) {
+        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(key) && getSymbolContent(key).indexOf('Symbol.') === 0) {
           return Reflect.get(target, key, receiver);
         }
         var active = Reflect.get(target, key, receiver);
 
         // here should be noticed
         // a Symbol key will not to into `get` option function
-        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(_get2) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(key)) {
+        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(_get2) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(key)) {
           var keyPath = [].concat(_toConsumableArray(parents), [key]);
           var _output = _get2(keyPath, active);
           return _output;
@@ -5415,7 +5407,7 @@ function createProxy(origin) {
         }
         var prev = origin[key];
         var invalid = media[key];
-        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(del) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(key)) {
+        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(del) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(key)) {
           del(keyPath);
         }
         delete origin[key];
@@ -5429,7 +5421,7 @@ function createProxy(origin) {
             active: none,
             prev: prev,
             invalid: invalid
-          }, !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "p"])(prev));
+          }, !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "o"])(prev));
         }
         return true;
       },
@@ -5455,7 +5447,7 @@ function createProxy(origin) {
         if (Object.isFrozen(origin)) {
           media[key] = create(value, keyPath);
         } else {
-          var needRewrite = Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(_set) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(key);
+          var needRewrite = Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(_set) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(key);
           var next = needRewrite ? _set(keyPath, value) : value;
           if (needRewrite) {
             origin[key] = next;
@@ -5474,13 +5466,13 @@ function createProxy(origin) {
     var proxy = new Proxy(media, {
       get: function get(target, key, receiver) {
         // get original property value
-        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(key) && key === ProxySymbol) {
+        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(key) && key === ProxySymbol) {
           return origin;
         }
 
         // primitive property
         // such as 'a' + obj, and obj[Symbol.toPrimitive](hint) defined
-        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(key) && getSymbolContent(key).indexOf('Symbol.') === 0) {
+        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(key) && getSymbolContent(key).indexOf('Symbol.') === 0) {
           return Reflect.get(target, key, receiver);
         }
 
@@ -5677,7 +5669,7 @@ function createProxy(origin) {
 
         // here should be noticed
         // a Symbol key will not to into `get` option function
-        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(_get2) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(key)) {
+        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(_get2) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(key)) {
           var _output2 = _get2(keyPath, active);
           return _output2;
         } else {
@@ -5772,7 +5764,7 @@ function createProxy(origin) {
         }
         var prev = origin[key];
         var invalid = media[key];
-        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(del) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(key)) {
+        if (Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(del) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(key)) {
           del(keyPath);
         }
         delete origin[key];
@@ -5786,7 +5778,7 @@ function createProxy(origin) {
             active: none,
             prev: prev,
             invalid: invalid
-          }, !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "p"])(prev));
+          }, !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isUndefined */ "o"])(prev));
         }
         return true;
       },
@@ -5815,7 +5807,7 @@ function createProxy(origin) {
         if (Object.isFrozen(origin)) {
           media[i] = create(value, keyPath);
         } else {
-          var needRewrite = Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(_set) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "o"])(i);
+          var needRewrite = Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(_set) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_1__[/* isSymbol */ "n"])(i);
           var next = needRewrite ? _set(keyPath, value) : value;
           if (needRewrite) {
             origin[i] = next;
@@ -5904,17 +5896,17 @@ function fromEntries(entries) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "p", function() { return isUndefined; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return isUndefined; });
 /* unused harmony export isNull */
 /* unused harmony export isNullish */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return isNone; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return isArray; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return isObject; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return isDate; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return isString; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return isString; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return isNumber; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return isNaN; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "o", function() { return isSymbol; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return isSymbol; });
 /* unused harmony export isFinite */
 /* unused harmony export isInfinite */
 /* unused harmony export isBoolean */
@@ -5938,7 +5930,7 @@ function fromEntries(entries) {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return inObject; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return hasOwnKey; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return inArray; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return isShallowEqual; });
+/* unused harmony export isShallowEqual */
 /* unused harmony export isOneInArray */
 /* unused harmony export isAllInArray */
 /* harmony import */ var _array_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(12);
@@ -6533,8 +6525,8 @@ function sortArray(items, by) {
   res.sort(function (a, b) {
     var oa = by ? a[by] : a;
     var ob = by ? b[by] : b;
-    oa = !Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isNaN */ "i"])(+oa) ? +oa : Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "n"])(oa) ? oa : 10;
-    ob = !Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isNaN */ "i"])(+ob) ? +ob : Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "n"])(ob) ? ob : 10;
+    oa = !Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isNaN */ "i"])(+oa) ? +oa : Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "m"])(oa) ? oa : 10;
+    ob = !Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isNaN */ "i"])(+ob) ? +ob : Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "m"])(ob) ? ob : 10;
     if (oa < ob) {
       return decs ? 1 : -1;
     }
@@ -7098,7 +7090,7 @@ function makeKeyPath(chain, isStrict) {
   for (var i = 0, len = chain.length; i < len; i++) {
     var key = chain[i];
     // do not support symbols
-    if (Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isSymbol */ "o"])(key)) {
+    if (Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isSymbol */ "n"])(key)) {
       var symbol = key.toString();
       path += '[' + symbol + ']';
     }
@@ -7107,15 +7099,15 @@ function makeKeyPath(chain, isStrict) {
       path += '[' + key + ']';
     }
     // '1'
-    else if (isStrict && Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "n"])(key) && /^[0-9]+$/.test(key)) {
+    else if (isStrict && Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "m"])(key) && /^[0-9]+$/.test(key)) {
       path += '[' + key + ']';
     }
     // '[1]' or '[a]' or '[a.b]'
-    else if (isStrict && Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "n"])(key) && /^\[.*\]$/.test(key)) {
+    else if (isStrict && Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "m"])(key) && /^\[.*\]$/.test(key)) {
       path += key;
     }
     // 'a.b'
-    else if (Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "n"])(key) && key.indexOf('.') > -1) {
+    else if (Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "m"])(key) && key.indexOf('.') > -1) {
       path += '[' + key + ']';
     } else {
       path += path ? '.' + key : key;
@@ -7209,12 +7201,12 @@ function assign(obj, key, value) {
     var current = chain[i];
     var next = chain[i + 1];
     // at the end
-    if (Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isUndefined */ "p"])(next) && i === len - 1) {
+    if (Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isUndefined */ "o"])(next) && i === len - 1) {
       next = tail;
     }
     if (Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isNumber */ "k"])(next) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isArray */ "d"])(target[current])) {
       target[current] = [];
-    } else if (Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "n"])(next) && /^[0-9]+$/.test(next) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isArray */ "d"])(target[current])) {
+    } else if (Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isString */ "m"])(next) && /^[0-9]+$/.test(next) && !Object(_is_js__WEBPACK_IMPORTED_MODULE_0__[/* isArray */ "d"])(target[current])) {
       target[current] = [];
     } else if (target[current] === null || _typeof(target[current]) !== 'object') {
       target[current] = {};
