@@ -360,10 +360,11 @@ function compile($root, components, directives, state, view, _ref2) {
       });
     });
   };
-  var instances = root.__jQvmComponentInstances = root.__jQvmComponentInstances || [];
   var createIterator = function createIterator(onCompile, onAffect) {
     return function (index) {
       var el = this;
+      // уже обработан вложенным compile (w-for) — повторно не трогаем
+      if (el.__jQvmIterated) return;
       var $el = $(el);
       var attrs = Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* getNodeAttrs */ "c"])(this);
       var name = Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* getNodeName */ "d"])(this);
@@ -385,29 +386,14 @@ function compile($root, components, directives, state, view, _ref2) {
         slot: slot,
         scope: scope
       };
-      var useComponent = function useComponent(view) {
-        var instance = instances.find(function (item) {
-          return item.name === name && item.index === index;
-        });
-        if (!instance) {
-          var _component = view.clone();
-          instance = {
-            name: name,
-            index: index,
-            component: _component
-          };
-          instances.push(instance);
-        }
-        var _instance = instance,
-          component = _instance.component;
-        record.component = component;
+      var useComponent = function useComponent(proto) {
+        // экземпляр создаётся в affect() и привязывается к конкретному DOM-элементу
+        record.view = proto;
         record.name = name;
         record.state = state;
-
-        // replace component tag
-        if (component.tag !== 'template') {
-          var tag = component.tag,
-            attributes = component.attributes;
+        if (proto.tag !== 'template') {
+          var tag = proto.tag,
+            attributes = proto.attributes;
           var $tag = $("<".concat(tag, " />"));
           var attrsText = Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* createAttrsText */ "b"])(attrs);
           var $commentBegin = $("<!-- ".concat(name, " ").concat(attrsText, " begin -->"));
@@ -418,7 +404,7 @@ function compile($root, components, directives, state, view, _ref2) {
           els.length = 0;
           els.push($commentBegin[0], $tag[0], $commentEnd[0]);
         } else {
-          $el.empty(); // clear inner content, which has been recorded into record.slot
+          $el.empty();
         }
       };
 
@@ -448,8 +434,10 @@ function compile($root, components, directives, state, view, _ref2) {
         }
       }
       records.push(record);
-      els.forEach(function (el) {
-        return el.__jQvmCompiledRecord = record;
+      el.__jQvmIterated = true;
+      els.forEach(function (item) {
+        item.__jQvmCompiledRecord = record;
+        item.__jQvmIterated = true;
       });
     };
   };
@@ -585,7 +573,7 @@ function diffAndPatch($root, nodes) {
         return;
       }
       var ignoreAttrs = ['style', 'class', 'w-name'];
-      if (current.nodeName === next.nodeName && $current.attr('data-hoist') === $current.attr('data-hoist') && Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isEqual */ "f"])(currentAttrNames.filter(function (item) {
+      if (current.nodeName === next.nodeName && $current.attr('data-hoist') === $next.attr('data-hoist') && Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isEqual */ "f"])(currentAttrNames.filter(function (item) {
         return !ignoreAttrs.includes(item);
       }), nextAttrNames.filter(function (item) {
         return !ignoreAttrs.includes(item);
@@ -680,24 +668,32 @@ function affect($root, scope, view) {
   records.forEach(function (record) {
     var affect = record.affect,
       attrs = record.attrs,
-      component = record.component,
       els = record.els,
+      proto = record.view,
       localScope = record.scope;
     var finalScope = localScope && localScope !== scope ? localScope : scope;
-    if (component) {
+    if (proto) {
       var state = record.state,
         slot = record.slot;
+      var slotInner = slot.template.trim();
       els.forEach(function (el) {
         if (el.nodeName.indexOf('#') === 0) {
           return;
         }
         var $el = $(el);
+
+        // экземпляр принадлежит DOM-элементу. Если diffAndPatch оставил старый
+        // элемент, берём его компонент, иначе создаём новый клон
+        var component = el.__jQvmComponent;
+        var isNew = !component;
+        if (isNew) {
+          component = proto.clone();
+        }
+        record.component = component;
         var outside = {};
         Object(ts_fns__WEBPACK_IMPORTED_MODULE_3__[/* each */ "b"])(attrs, function (exp, attr) {
           if (attr.indexOf(':') === 0) {
-            var value = finalScope.parse(exp);
-            var key = Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* camelCase */ "a"])(attr.substring(1));
-            outside[key] = value;
+            outside[Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* camelCase */ "a"])(attr.substring(1))] = finalScope.parse(exp);
           } else if (attr.indexOf('@') === 0) {
             var event = Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* camelCase */ "a"])(attr.substring(1));
             var _parseKey = Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* parseKey */ "f"])(exp),
@@ -708,10 +704,10 @@ function affect($root, scope, view) {
             outside['@' + event] = function () {
               var res = null;
               if (params) {
-                var _args2 = params.map(function (arg) {
+                var values = params.map(function (arg) {
                   return finalScope.parse(arg);
                 });
-                res = fn.call.apply(fn, [view, state].concat(_toConsumableArray(_args2)));
+                res = fn.call.apply(fn, [view, state].concat(_toConsumableArray(values)));
               } else {
                 res = fn.call(view, state);
               }
@@ -723,21 +719,15 @@ function affect($root, scope, view) {
               }
             };
           } else if (attr.indexOf('_') !== 0) {
-            var _key2 = Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* camelCase */ "a"])(attr);
-            outside[_key2] = exp;
+            outside[Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* camelCase */ "a"])(attr)] = exp;
           }
         });
         component.update(outside, SYMBOL);
-        var slotInner = slot.template.trim();
         component.component('slot', function () {
           var scope = this.scope;
-          if (slotInner) {
-            var nodes = slot(scope);
-            return nodes;
-          }
-          return '';
+          return slotInner ? slot(scope) : '';
         });
-        if (!el.__jQvmComponent) {
+        if (isNew) {
           el.__jQvmComponent = component;
           component.mount($el);
         } else if (!$el.attr('w-name')) {
@@ -745,12 +735,7 @@ function affect($root, scope, view) {
         } else if (slotInner) {
           component.update(true);
         }
-
-        // let attrs has the result so that we can use them in effects
-        // attrs._attrs = outside
       });
-
-      // remove no use info
       els.forEach(function (el) {
         delete el.__jQvmCompiledRecord;
       });
@@ -764,7 +749,7 @@ function affect($root, scope, view) {
         $root: $root,
         scope: finalScope,
         view: view,
-        component: component
+        component: record.component
       };
       var revoke = affect.call(ctx, $el, attrs);
       if (typeof revoke === 'function') {
@@ -776,6 +761,17 @@ function affect($root, scope, view) {
 
 // ---------------- main ---------------
 
+function cloneState(value) {
+  if (Array.isArray(value)) return value.map(cloneState);
+  if (value && Object.getPrototypeOf(value) === Object.prototype) {
+    var out = {};
+    Object.keys(value).forEach(function (k) {
+      out[k] = cloneState(value[k]);
+    });
+    return out;
+  }
+  return value;
+}
 function vm() {
   var initState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   var template = this;
@@ -826,86 +822,6 @@ function vm() {
       });
     }
     return view;
-  }
-  var nativeImport = new Function('u', 'return import(u)');
-  var remoteCache = {};
-  function loadRemote(url) {
-    if (remoteCache[url]) {
-      return remoteCache[url];
-    }
-    var entry = remoteCache[url] = {
-      view: null,
-      waiters: new Set()
-    };
-    fetch(url).then(function (r) {
-      if (!r.ok) {
-        throw new Error("Wex: cannot load component ".concat(url, " (").concat(r.status, ")"));
-      }
-      return r.text();
-    }).then(/*#__PURE__*/function () {
-      var _ref9 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(html) {
-        var _doc$querySelector2;
-        var doc, tpl, $tpl, code, view, blobUrl, mod;
-        return _regenerator().w(function (_context2) {
-          while (1) switch (_context2.p = _context2.n) {
-            case 0:
-              doc = new DOMParser().parseFromString(html, 'text/html');
-              tpl = doc.querySelector('template');
-              if (tpl) {
-                _context2.n = 1;
-                break;
-              }
-              throw new Error("Wex: no <template> in ".concat(url));
-            case 1:
-              $tpl = $("<template>".concat(tpl.innerHTML, "</template>"));
-              code = (_doc$querySelector2 = doc.querySelector('script[type="module"]')) === null || _doc$querySelector2 === void 0 ? void 0 : _doc$querySelector2.textContent;
-              view = null;
-              if (!code) {
-                _context2.n = 6;
-                break;
-              }
-              blobUrl = URL.createObjectURL(new Blob([code], {
-                type: 'text/javascript'
-              }));
-              _context2.p = 2;
-              _context2.n = 3;
-              return nativeImport(blobUrl);
-            case 3:
-              mod = _context2.v;
-              view = mod["default"]($tpl);
-            case 4:
-              _context2.p = 4;
-              URL.revokeObjectURL(blobUrl);
-              return _context2.f(4);
-            case 5:
-              _context2.n = 7;
-              break;
-            case 6:
-              view = $tpl.vm();
-            case 7:
-              if (view instanceof View) {
-                _context2.n = 8;
-                break;
-              }
-              throw new Error("Wex: ".concat(url, " must export default a function returning a view"));
-            case 8:
-              entry.view = view;
-              entry.waiters.forEach(function (v) {
-                return v.update(true);
-              });
-              entry.waiters.clear();
-            case 9:
-              return _context2.a(2);
-          }
-        }, _callee2, null, [[2,, 4, 5]]);
-      }));
-      return function (_x2) {
-        return _ref9.apply(this, arguments);
-      };
-    }())["catch"](function (e) {
-      return console.error(e);
-    });
-    return entry;
   }
   function directive(name, compile, affect) {
     _push(directives, name, compile, affect);
@@ -1172,8 +1088,8 @@ function vm() {
         }
       }
       var res = null;
-      for (var _len2 = arguments.length, eventArgs = new Array(_len2 > 1 ? _len2 - 1 : 0), _key3 = 1; _key3 < _len2; _key3++) {
-        eventArgs[_key3 - 1] = arguments[_key3];
+      for (var _len2 = arguments.length, eventArgs = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+        eventArgs[_key2 - 1] = arguments[_key2];
       }
       if (event[0] === '$') {
         fn.call.apply(fn, [view, state].concat(eventArgs));
@@ -1222,19 +1138,19 @@ function vm() {
         var _event = item.event,
           _selector = item.selector,
           handle = item.handle;
-        var _args4 = [_event, _selector, handle].filter(Boolean);
+        var _args2 = [_event, _selector, handle].filter(Boolean);
         if (_event[0] === '$') {
-          $template.off.apply($template, _toConsumableArray(_args4));
+          $template.off.apply($template, _toConsumableArray(_args2));
         } else {
-          $root.off.apply($root, _toConsumableArray(_args4));
+          $root.off.apply($root, _toConsumableArray(_args2));
         }
         actions.splice(i, 1);
       }
     });
   }
   function emit(event) {
-    for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key4 = 1; _key4 < _len3; _key4++) {
-      args[_key4 - 1] = arguments[_key4];
+    for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+      args[_key3 - 1] = arguments[_key3];
     }
     // trigger those passed to components, only works for components
     if (outside) {
@@ -1319,7 +1235,8 @@ function vm() {
     return view;
   }
   function clone() {
-    var newView = vm.call(template, initState);
+    // свой <template> и своя копия начального состояния на каждый экземпляр
+    var newView = vm.call($template.clone(), Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(initState) ? initState : cloneState(initState));
     Object(ts_fns__WEBPACK_IMPORTED_MODULE_3__[/* each */ "b"])(fns, function (action, name) {
       newView.fn(name, action);
     });
@@ -1374,22 +1291,22 @@ function vm() {
   }
   Object.assign(view, {
     once: function once() {
-      for (var _len4 = arguments.length, args = new Array(_len4), _key5 = 0; _key5 < _len4; _key5++) {
-        args[_key5] = arguments[_key5];
+      for (var _len4 = arguments.length, args = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+        args[_key4] = arguments[_key4];
       }
       bind(args, true);
       return view;
     },
     on: function on() {
-      for (var _len5 = arguments.length, args = new Array(_len5), _key6 = 0; _key6 < _len5; _key6++) {
-        args[_key6] = arguments[_key6];
+      for (var _len5 = arguments.length, args = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+        args[_key5] = arguments[_key5];
       }
       bind(args);
       return view;
     },
     off: function off() {
-      for (var _len6 = arguments.length, args = new Array(_len6), _key7 = 0; _key7 < _len6; _key7++) {
-        args[_key7] = arguments[_key7];
+      for (var _len6 = arguments.length, args = new Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
+        args[_key6] = arguments[_key6];
       }
       unbind(args);
       return view;
@@ -1452,7 +1369,7 @@ directive('w-for', function ($el, attrs) {
   }
   var $els = [];
   var temp = el.outerHTML;
-  Object(ts_fns__WEBPACK_IMPORTED_MODULE_3__[/* each */ "b"])(data, function (value, key) {
+  Object(ts_fns__WEBPACK_IMPORTED_MODULE_3__[/* each */ "b"])(Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isNone */ "j"])(data) ? [] : data, function (value, key) {
     var newScope = _defineProperty({}, valueName, value);
     if (keyName) {
       newScope[keyName] = key;
@@ -1473,9 +1390,9 @@ function sanitizeSvg(str) {
   });
   tpl.content.querySelectorAll('*').forEach(function (el) {
     ;
-    _toConsumableArray(el.attributes).forEach(function (_ref0) {
-      var name = _ref0.name,
-        value = _ref0.value;
+    _toConsumableArray(el.attributes).forEach(function (_ref9) {
+      var name = _ref9.name,
+        value = _ref9.value;
       var n = name.toLowerCase();
       var v = value.trim().toLowerCase();
       var badHref = (n === 'href' || n === 'xlink:href') && !v.startsWith('#');

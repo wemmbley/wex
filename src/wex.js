@@ -154,9 +154,10 @@ function compile($root, components, directives, state, view, [template, scope, i
     })
   }
 
-  const instances = root.__jQvmComponentInstances = root.__jQvmComponentInstances || []
   const createIterator = (onCompile, onAffect) => function(index) {
     const el = this
+	// уже обработан вложенным compile (w-for) — повторно не трогаем
+	if (el.__jQvmIterated) return
     const $el = $(el)
     const attrs = getNodeAttrs(this)
     const name = getNodeName(this)
@@ -175,41 +176,30 @@ function compile($root, components, directives, state, view, [template, scope, i
 
     const record = { affect: onAffect, attrs, els, slot, scope }
 
-    const useComponent = (view) => {
-      let instance = instances.find(item => item.name === name && item.index === index)
-      if (!instance) {
-        const component = view.clone()
-        instance = { name, index, component }
-        instances.push(instance)
-      }
+    const useComponent = (proto) => {
+	  // экземпляр создаётся в affect() и привязывается к конкретному DOM-элементу
+	  record.view = proto
+	  record.name = name
+	  record.state = state
 
-      const { component } = instance
+	  if (proto.tag !== 'template') {
+		const { tag, attributes } = proto
+		const $tag = $(`<${tag} />`)
 
-      record.component = component
-      record.name = name
-      record.state = state
+		const attrsText = createAttrsText(attrs)
+		const $commentBegin = $(`<!-- ${name} ${attrsText} begin -->`)
+		const $commentEnd = $(`<!-- ${name} ${attrsText} end -->`)
 
-      // replace component tag
-      if (component.tag !== 'template') {
-        const { tag, attributes } = component
-        const $tag = $(`<${tag} />`)
-
-        const attrsText = createAttrsText(attrs)
-        const $commentBegin = $(`<!-- ${name} ${attrsText} begin -->`)
-        const $commentEnd = $(`<!-- ${name} ${attrsText} end -->`)
-
-        Object.assign(attrs, attributes, {
-          ['data-hoist']: name,
-        })
-        $tag.attr(attrs)
-        $el.replaceWith([$commentBegin, $tag, $commentEnd])
-        els.length = 0
-        els.push($commentBegin[0], $tag[0], $commentEnd[0])
-      }
-      else {
-        $el.empty() // clear inner content, which has been recorded into record.slot
-      }
-    }
+		Object.assign(attrs, attributes, { ['data-hoist']: name })
+		$tag.attr(attrs)
+		$el.replaceWith([$commentBegin, $tag, $commentEnd])
+		els.length = 0
+		els.push($commentBegin[0], $tag[0], $commentEnd[0])
+	  }
+	  else {
+		$el.empty()
+	  }
+	}
 
     // register a view as component
     if (onCompile instanceof View) {
@@ -237,8 +227,12 @@ function compile($root, components, directives, state, view, [template, scope, i
       }
     }
 
-    records.push(record)
-    els.forEach(el => el.__jQvmCompiledRecord = record)
+	records.push(record)
+	el.__jQvmIterated = true
+	els.forEach((item) => {
+	  item.__jQvmCompiledRecord = record
+	  item.__jQvmIterated = true
+	})
   }
 
   // directives have higher priority than components
@@ -377,7 +371,7 @@ function diffAndPatch($root, nodes) {
       const ignoreAttrs = ['style', 'class', 'w-name']
       if (
         current.nodeName === next.nodeName
-        && $current.attr('data-hoist') === $current.attr('data-hoist')
+        && $current.attr('data-hoist') === $next.attr('data-hoist')
         && isEqual(currentAttrNames.filter(item => !ignoreAttrs.includes(item)), nextAttrNames.filter(item => !ignoreAttrs.includes(item)))
       ) {
         return
@@ -477,11 +471,13 @@ function affect($root, scope, view) {
   const records = root.__jQvmCompiledRecords = root.__jQvmCompiledRecords || []
 
   records.forEach((record) => {
-    const { affect, attrs, component, els, scope: localScope } = record
+    const { affect, attrs, els, view: proto, scope: localScope } = record
     const finalScope = localScope && localScope !== scope ? localScope : scope
 
-    if (component) {
+    if (proto) {
       const { state, slot } = record
+      const slotInner = slot.template.trim()
+
       els.forEach((el) => {
         if (el.nodeName.indexOf('#') === 0) {
           return
@@ -489,12 +485,19 @@ function affect($root, scope, view) {
 
         const $el = $(el)
 
+        // экземпляр принадлежит DOM-элементу. Если diffAndPatch оставил старый
+        // элемент, берём его компонент, иначе создаём новый клон
+        let component = el.__jQvmComponent
+        const isNew = !component
+        if (isNew) {
+          component = proto.clone()
+        }
+        record.component = component
+
         const outside = {}
         each(attrs, (exp, attr) => {
           if (attr.indexOf(':') === 0) {
-            const value = finalScope.parse(exp)
-            const key = camelCase(attr.substring(1))
-            outside[key] = value
+            outside[camelCase(attr.substring(1))] = finalScope.parse(exp)
           }
           else if (attr.indexOf('@') === 0) {
             const event = camelCase(attr.substring(1))
@@ -503,8 +506,8 @@ function affect($root, scope, view) {
             outside['@' + event] = function(...args) {
               let res = null
               if (params) {
-                const args = params.map(arg => finalScope.parse(arg))
-                res = fn.call(view, state, ...args)
+                const values = params.map(arg => finalScope.parse(arg))
+                res = fn.call(view, state, ...values)
               }
               else {
                 res = fn.call(view, state)
@@ -515,24 +518,17 @@ function affect($root, scope, view) {
             }
           }
           else if (attr.indexOf('_') !== 0) {
-            const key = camelCase(attr)
-            outside[key] = exp
+            outside[camelCase(attr)] = exp
           }
         })
         component.update(outside, SYMBOL)
 
-        const slotInner = slot.template.trim()
-
         component.component('slot', function() {
           const { scope } = this
-          if (slotInner) {
-            const nodes = slot(scope)
-            return nodes
-          }
-          return ''
+          return slotInner ? slot(scope) : ''
         })
 
-        if (!el.__jQvmComponent) {
+        if (isNew) {
           el.__jQvmComponent = component
           component.mount($el)
         }
@@ -542,12 +538,8 @@ function affect($root, scope, view) {
         else if (slotInner) {
           component.update(true)
         }
-
-        // let attrs has the result so that we can use them in effects
-        // attrs._attrs = outside
       })
 
-      // remove no use info
       els.forEach((el) => {
         delete el.__jQvmCompiledRecord
       })
@@ -559,7 +551,7 @@ function affect($root, scope, view) {
 
     els.forEach((el) => {
       const $el = $(el)
-      const ctx = { $root, scope: finalScope, view, component }
+      const ctx = { $root, scope: finalScope, view, component: record.component }
       const revoke = affect.call(ctx, $el, attrs)
       if (typeof revoke === 'function') {
         record.revoke = revoke
@@ -569,6 +561,16 @@ function affect($root, scope, view) {
 }
 
 // ---------------- main ---------------
+
+function cloneState(value) {
+  if (Array.isArray(value)) return value.map(cloneState)
+  if (value && Object.getPrototypeOf(value) === Object.prototype) {
+    const out = {}
+    Object.keys(value).forEach((k) => { out[k] = cloneState(value[k]) })
+    return out
+  }
+  return value
+}
 
 function vm(initState = {}) {
   const template = this
@@ -622,61 +624,6 @@ function vm(initState = {}) {
       view.on('$beforeDestroy', () => compile.destroy())
     }
     return view
-  }
-
-  const nativeImport = new Function('u', 'return import(u)')
-  const remoteCache = {}
-
-  function loadRemote(url) {
-    if (remoteCache[url]) {
-      return remoteCache[url]
-    }
-
-    const entry = remoteCache[url] = { view: null, waiters: new Set() }
-
-    fetch(url)
-        .then((r) => {
-          if (!r.ok) {
-            throw new Error(`Wex: cannot load component ${url} (${r.status})`)
-          }
-          return r.text()
-        })
-        .then(async (html) => {
-          const doc = new DOMParser().parseFromString(html, 'text/html')
-          const tpl = doc.querySelector('template')
-          if (!tpl) {
-            throw new Error(`Wex: no <template> in ${url}`)
-          }
-
-          const $tpl = $(`<template>${tpl.innerHTML}</template>`)
-          const code = doc.querySelector('script[type="module"]')?.textContent
-
-          let view = null
-          if (code) {
-            const blobUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))
-            try {
-              const mod = await nativeImport(blobUrl)
-              view = mod.default($tpl)
-            }
-            finally {
-              URL.revokeObjectURL(blobUrl)
-            }
-          }
-          else {
-            view = $tpl.vm()
-          }
-
-          if (!(view instanceof View)) {
-            throw new Error(`Wex: ${url} must export default a function returning a view`)
-          }
-
-          entry.view = view
-          entry.waiters.forEach(v => v.update(true))
-          entry.waiters.clear()
-        })
-        .catch(e => console.error(e))
-
-    return entry
   }
 
   function directive(name, compile, affect) {
@@ -1129,7 +1076,8 @@ function vm(initState = {}) {
   }
 
   function clone() {
-    const newView = vm.call(template, initState)
+	// свой <template> и своя копия начального состояния на каждый экземпляр
+	const newView = vm.call($template.clone(), isFunction(initState) ? initState : cloneState(initState))  
     each(fns, (action, name) => {
       newView.fn(name, action)
     })
@@ -1249,7 +1197,7 @@ directive('w-for', function($el, attrs) {
   const $els = []
 
   const temp = el.outerHTML
-  each(data, (value, key) => {
+  each(isNone(data) ? [] : data, (value, key) => {
     const newScope = {
       [valueName]: value,
     }
