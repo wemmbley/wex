@@ -1121,7 +1121,8 @@ function vm() {
       var realKey = key in state ? key : keys[key.toLowerCase()];
       if (!realKey) return;
       var hash = Object(ts_fns__WEBPACK_IMPORTED_MODULE_3__[/* getObjectHash */ "c"])(value);
-      if (!init && outsideHashes[key] === hash) return;
+      console.log('prop', key, 'hash', hash, 'prev', outsideHashes[key], 'child keys', Object.keys(state[realKey] || {}).length, 'value keys', Object.keys(value || {}).length);
+      if (!init && outsideHashes[key] === hash && Object(ts_fns__WEBPACK_IMPORTED_MODULE_3__[/* getObjectHash */ "c"])(state[realKey]) === hash) return;
       outsideHashes[key] = hash;
       next[realKey] = value;
     });

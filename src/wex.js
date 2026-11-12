@@ -838,11 +838,12 @@ function vm(initState = {}) {
       const realKey = key in state ? key : keys[key.toLowerCase()]
       if (!realKey) return
 
-      const hash = getObjectHash(value)
-      if (!init && outsideHashes[key] === hash) return
-      outsideHashes[key] = hash
+		const hash = getObjectHash(value)
+		console.log('prop', key, 'hash', hash, 'prev', outsideHashes[key], 'child keys', Object.keys(state[realKey] || {}).length, 'value keys', Object.keys(value || {}).length)
+		if (!init && outsideHashes[key] === hash && getObjectHash(state[realKey]) === hash) return
+		outsideHashes[key] = hash
 
-      next[realKey] = value
+		next[realKey] = value
     })
 
 	  Object.assign(state, next)
