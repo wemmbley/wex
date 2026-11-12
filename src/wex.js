@@ -827,7 +827,7 @@ function vm(initState = {}) {
   const outsideHashes = {}
 
   const assignOutsideState = (state, outsideState, init) => {
-    if (!state) return
+    if (!state) return false
 
     const keys = {}
     Object.keys(state).forEach((k) => { keys[k.toLowerCase()] = k })
@@ -845,7 +845,8 @@ function vm(initState = {}) {
       next[realKey] = value
     })
 
-    Object.assign(state, next)
+	  Object.assign(state, next)
+	  return Object.keys(next).length > 0
   }
 
   function init(initState) {
@@ -1038,15 +1039,27 @@ function vm(initState = {}) {
 
     $template.trigger('$destroy')
   }
+  
+	let forcePending = false
+	const scheduleForce = () => {
+	  if (forcePending) return
+	  forcePending = true
+	  Promise.resolve().then(() => {
+		forcePending = false
+		if (isMounted && state) {
+		  render(true)
+		  currTick()
+		}
+	  })
+	}
 
   function update(nextState, type) {
-    if (type === SYMBOL) {
-      if (state) {
-        assignOutsideState(state, nextState)
-      }
-      outside = nextState
-      return view
-    }
+	if (type === SYMBOL) {
+	  const changed = state ? assignOutsideState(state, nextState) : false
+	  outside = nextState
+	  if (changed && isMounted) scheduleForce()
+	  return view
+	}
 
     // force update
     if (nextState === true) {

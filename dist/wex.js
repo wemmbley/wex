@@ -1110,7 +1110,7 @@ function vm() {
 
   var outsideHashes = {};
   var assignOutsideState = function assignOutsideState(state, outsideState, init) {
-    if (!state) return;
+    if (!state) return false;
     var keys = {};
     Object.keys(state).forEach(function (k) {
       keys[k.toLowerCase()] = k;
@@ -1126,6 +1126,7 @@ function vm() {
       next[realKey] = value;
     });
     Object.assign(state, next);
+    return Object.keys(next).length > 0;
   };
   function init(initState) {
     var next = Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(initState) ? initState.call(view) : initState;
@@ -1287,12 +1288,23 @@ function vm() {
     delete root.__jQvmCompiledRecords;
     $template.trigger('$destroy');
   }
+  var forcePending = false;
+  var scheduleForce = function scheduleForce() {
+    if (forcePending) return;
+    forcePending = true;
+    Promise.resolve().then(function () {
+      forcePending = false;
+      if (isMounted && state) {
+        render(true);
+        currTick();
+      }
+    });
+  };
   function update(nextState, type) {
     if (type === SYMBOL) {
-      if (state) {
-        assignOutsideState(state, nextState);
-      }
+      var changed = state ? assignOutsideState(state, nextState) : false;
       outside = nextState;
+      if (changed && isMounted) scheduleForce();
       return view;
     }
 
