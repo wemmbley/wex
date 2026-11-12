@@ -12,6 +12,78 @@ let $ = null
 export function View() {}
 const SYMBOL = {}
 
+export const config = {
+  // по умолчанию debug включён только на localhost
+  debug: typeof location !== 'undefined' && /^(localhost|127\.|\[::1\])/.test(location.hostname),
+  maxDepth: 50,     // максимальная вложенность компонентов
+  syncMounts: 50,   // сколько компонентов монтировать синхронно за тик, остальные по кадрам (Infinity = как раньше)
+  mountBudget: 10,  // мс на кадр для отложенного монтирования
+}
+
+const reported = new Set()
+
+function scopeSnapshot(scp) {
+  const out = {}
+  try {
+    const data = scp.data || {}
+    for (const k in data) {
+      const v = data[k]
+      out[k] = v && typeof v === 'object'
+        ? (Array.isArray(v) ? `Array(${v.length})` : `{${Object.keys(v).slice(0, 6).join(', ')}}`)
+        : v
+    }
+  } catch (e) {}
+  return out
+}
+
+// level: 'error' пишется всегда, 'warn' только при config.debug
+function report(title, ctx = {}) {
+  const level = ctx.level || 'warn'
+  if (level !== 'error' && !config.debug) return
+
+  const path = (ctx.view && ctx.view.__path) || ['root']
+  const key = [title, path.join('>'), ctx.attr, ctx.expr].join('|')
+  if (reported.has(key)) return   // не спамим 1500 одинаковых сообщений
+  reported.add(key)
+
+  const color = level === 'error' ? '#e11d48' : '#d97706'
+  console.groupCollapsed(`%cWex%c ${title}`, `background:${color};color:#fff;padding:1px 5px;border-radius:3px`, '')
+  console.log('Цепочка компонентов:', path.join(' › '))
+  if (ctx.attr)   console.log('Атрибут:', ctx.attr)
+  if (ctx.expr)   console.log('Выражение:', ctx.expr)
+  if (ctx.source) console.log('Место в шаблоне:', ctx.source)
+  if (ctx.scope)  console.log('Доступные переменные:', scopeSnapshot(ctx.scope))
+  if (ctx.el)     console.log('Элемент (можно кликнуть):', ctx.el)
+  if (ctx.hint)   console.log('Подсказка:', ctx.hint)
+  console.groupEnd()
+}
+
+function safeParse(scp, exp, ctx) {
+  try { return scp.parse(exp) }
+  catch (e) {
+    report(`Ошибка в выражении «${exp}»: ${e.message}`, { ...ctx, expr: exp, scope: scp, level: 'error' })
+    return undefined
+  }
+}
+
+function checkInterpolation(text, scp, ctx) {
+  if (!config.debug || text.indexOf('{{') === -1) return
+  text.replace(/\{\{([\s\S]+?)\}\}/g, (m, raw) => {
+    const expr = raw.trim()
+    try {
+      const v = scp.parse(expr)
+      if (isNone(v)) {
+        report(`«{{ ${expr} }}» вернул ${v}`, { ...ctx, expr, scope: scp })
+      }
+    } catch (e) {
+      if (expr.indexOf('|') === -1) {   // фильтры parse может не понимать
+        report(`Ошибка в «{{ ${expr} }}»: ${e.message}`, { ...ctx, expr, scope: scp, level: 'error' })
+      }
+    }
+    return m
+  })
+}
+
 // ---------------
 
 const globalComponents = []
@@ -130,29 +202,35 @@ function compile($root, components, directives, state, view, [template, scope, i
   const $element = $(`<div />`).html(template)
 
   const interpolate = ($element, scp = scope) => {
-    $element.each(function() {
-      const attrs = [...this.attributes]
-      const $this = $(this)
-      attrs.forEach(({ name, value }) => {
-        // HTML standard not allow @attr
-        if (name.indexOf('@') === 0) {
-          return
-        }
-        const text = scp.interpolate(value)
-        $this.attr(name, text)
-      })
+	  $element.each(function() {
+		const attrs = [...this.attributes]
+		const $this = $(this)
+		attrs.forEach(({ name, value }) => {
+		  if (name.indexOf('@') === 0) return
 
-      const children = [...this.childNodes]
-      children.forEach((child) => {
-        if (child.nodeName === '#text') {
-          child.textContent = scp.interpolate(child.textContent)
-        }
-        else if (child.nodeName.indexOf('#') !== 0) {
-          interpolate($(child), scp)
-        }
-      })
-    })
-  }
+		  checkInterpolation(value, scp, { view, el: this, attr: name })
+		  const text = scp.interpolate(value)
+
+		  // атрибут целиком из одного {{ }} и результат пустой: не пишем "undefined" в DOM
+		  if ((text === 'undefined' || text === 'null') && /^\{\{[^}]+\}\}$/.test(value.trim())) {
+			$this.removeAttr(name)
+			return
+		  }
+		  $this.attr(name, text)
+		})
+
+		const children = [...this.childNodes]
+		children.forEach((child) => {
+		  if (child.nodeName === '#text') {
+			checkInterpolation(child.textContent, scp, { view, el: this })
+			child.textContent = scp.interpolate(child.textContent)
+		  }
+		  else if (child.nodeName.indexOf('#') !== 0) {
+			interpolate($(child), scp)
+		  }
+		})
+	  })
+	}
 
   const createIterator = (onCompile, onAffect) => function(index) {
     const el = this
@@ -174,7 +252,10 @@ function compile($root, components, directives, state, view, [template, scope, i
     slot.template = inner
     slot.nodes = [...el.childNodes]
 
-    const record = { affect: onAffect, attrs, els, slot, scope }
+    const record = {
+	  affect: onAffect, attrs, els, slot, scope,
+	  source: config.debug ? el.outerHTML.slice(0, 160) : '',
+	}
 
     const useComponent = (proto) => {
 	  // экземпляр создаётся в affect() и привязывается к конкретному DOM-элементу
@@ -448,17 +529,20 @@ function diffAndPatch($root, nodes) {
     // remove no use elements
     for (let i = parentNode.childNodes.length - 1, start = nextChildren.length; i >= start; i --) {
       const child = parentNode.childNodes[i]
-      if (child.__jQvmComponent) {
-        child.__jQvmComponent.unmount()
-        delete child.__jQvmComponent
-      }
-      const all = $(child).find('*')
-      all.each(function() {
-        if (this.__jQvmComponent) {
-          this.__jQvmComponent.unmount()
-          delete this.__jQvmComponent
-        }
-      })
+	  
+		 if (child.__jQvmComponent) {
+		  child.__jQvmComponent.__cancelled = true
+		  child.__jQvmComponent.unmount()
+		  delete child.__jQvmComponent
+		}
+		const all = $(child).find('*')
+		all.each(function() {
+		  if (this.__jQvmComponent) {
+			this.__jQvmComponent.__cancelled = true
+			this.__jQvmComponent.unmount()
+			delete this.__jQvmComponent
+		  }
+		})
       parentNode.removeChild(child)
     }
   }
@@ -466,12 +550,63 @@ function diffAndPatch($root, nodes) {
   diffAndPatchChildren($root, nodes)
 }
 
+// ---------- очередь отложенного монтирования ----------
+const mountQueue = []
+let mountScheduled = false
+let flushing = false
+let collecting = null
+let syncCount = 0
+
+const nextFrame = fn => (document.hidden ? setTimeout(fn, 0) : requestAnimationFrame(fn))
+
+function shouldDefer() {
+  return flushing || syncCount >= config.syncMounts
+}
+
+function noteSyncMount() {
+  if (syncCount === 0) Promise.resolve().then(() => { syncCount = 0 })
+  syncCount ++
+}
+
+function scheduleMount(job) {
+  // задачи, созданные внутри текущей задачи (дети), встают в начало очереди:
+  // получается обход в глубину, то есть порядок как в документе
+  if (collecting) collecting.push(job)
+  else mountQueue.push(job)
+
+  if (!mountScheduled) {
+    mountScheduled = true
+    nextFrame(flushMounts)
+  }
+}
+
+function flushMounts() {
+  mountScheduled = false
+  flushing = true
+  const start = performance.now()
+
+  while (mountQueue.length && performance.now() - start < config.mountBudget) {
+    const job = mountQueue.shift()
+    collecting = []
+    try { job() }
+    catch (e) { console.error(e) }
+    if (collecting.length) mountQueue.unshift(...collecting)
+    collecting = null
+  }
+
+  flushing = false
+  if (mountQueue.length) {
+    mountScheduled = true
+    nextFrame(flushMounts)
+  }
+}
+
 function affect($root, scope, view) {
   const root = $root[0]
   const records = root.__jQvmCompiledRecords = root.__jQvmCompiledRecords || []
 
   records.forEach((record) => {
-    const { affect, attrs, els, view: proto, scope: localScope } = record
+    const { affect, attrs, els, view: proto, scope: localScope, name, source } = record
     const finalScope = localScope && localScope !== scope ? localScope : scope
 
     if (proto) {
@@ -479,30 +614,43 @@ function affect($root, scope, view) {
       const slotInner = slot.template.trim()
 
       els.forEach((el) => {
-        if (el.nodeName.indexOf('#') === 0) {
-          return
-        }
+        if (el.nodeName.indexOf('#') === 0) return
 
         const $el = $(el)
-
-        // экземпляр принадлежит DOM-элементу. Если diffAndPatch оставил старый
-        // элемент, берём его компонент, иначе создаём новый клон
         let component = el.__jQvmComponent
         const isNew = !component
+
         if (isNew) {
+          // --- защита от бесконечной рекурсии ---
+          const parentPath = view.__path || ['root']
+          if (parentPath.length > config.maxDepth) {
+            report(`Превышена глубина вложенности компонентов (${config.maxDepth}), «${name}» не создан`, {
+              level: 'error', view, el, source,
+              hint: 'Рекурсивный компонент без условия выхода или циклические данные. Остановите рекурсию через w-if.',
+            })
+            $el.empty().attr('data-wex-error', 'max-depth')
+            return
+          }
           component = proto.clone()
+          component.__path = parentPath.concat(name)
         }
         record.component = component
 
+        // --- props ---
         const outside = {}
         each(attrs, (exp, attr) => {
           if (attr.indexOf(':') === 0) {
-            outside[camelCase(attr.substring(1))] = finalScope.parse(exp)
+            const ctx = { view, el, attr, expr: exp, source }
+            const value = safeParse(finalScope, exp, ctx)
+            if (isNone(value)) {
+              report(`Проп «${attr.substring(1)}» компонента «${name}» получил ${value}`, { ...ctx, scope: finalScope })
+            }
+            outside[camelCase(attr.substring(1))] = value
           }
           else if (attr.indexOf('@') === 0) {
             const event = camelCase(attr.substring(1))
-            const [name, params] = parseKey(exp)
-            const fn = view.fn(name)
+            const [fname, params] = parseKey(exp)
+            const fn = view.fn(fname)
             outside['@' + event] = function(...args) {
               let res = null
               if (params) {
@@ -512,9 +660,7 @@ function affect($root, scope, view) {
               else {
                 res = fn.call(view, state)
               }
-              if (isFunction(res)) {
-                return res.apply(this, args)
-              }
+              if (isFunction(res)) return res.apply(this, args)
             }
           }
           else if (attr.indexOf('_') !== 0) {
@@ -528,9 +674,24 @@ function affect($root, scope, view) {
           return slotInner ? slot(scope) : ''
         })
 
+        // --- монтирование ---
         if (isNew) {
           el.__jQvmComponent = component
-          component.mount($el)
+          if (shouldDefer()) {
+            component.__pending = true
+            scheduleMount(() => {
+              component.__pending = false
+              if (el.__jQvmComponent !== component || component.__cancelled) return
+              component.mount($el)
+            })
+          }
+          else {
+            noteSyncMount()
+            component.mount($el)
+          }
+        }
+        else if (component.__pending) {
+          // ждёт своей очереди; свежие props уже переданы выше
         }
         else if (!$el.attr('w-name')) {
           component.mount($el)
@@ -540,22 +701,16 @@ function affect($root, scope, view) {
         }
       })
 
-      els.forEach((el) => {
-        delete el.__jQvmCompiledRecord
-      })
+      els.forEach((el) => { delete el.__jQvmCompiledRecord })
     }
 
-    if (typeof affect !== 'function') {
-      return
-    }
+    if (typeof affect !== 'function') return
 
     els.forEach((el) => {
       const $el = $(el)
       const ctx = { $root, scope: finalScope, view, component: record.component }
       const revoke = affect.call(ctx, $el, attrs)
-      if (typeof revoke === 'function') {
-        record.revoke = revoke
-      }
+      if (typeof revoke === 'function') record.revoke = revoke
     })
   })
 }
@@ -1239,7 +1394,9 @@ function sanitizeSvg(str) {
 directive('w-html', function ($el, attrs) {
   // принимаем и w-html="item.icon", и w-html="{{ item.icon }}"
   const exp = attrs['w-html'].replace(/^\{\{\s*|\s*\}\}$/g, '')
-  const html = this.scope.parse(exp)
+  const ctx = { view: this.view, el: $el[0], attr: 'w-html', expr: exp }
+	const html = safeParse(this.scope, exp, ctx)
+	if (isNone(html)) report(`w-html получил ${html}`, { ...ctx, scope: this.scope })
 
   $el.removeAttr('w-html')
   $el.html(sanitizeSvg(isNone(html) ? '' : String(html)))
@@ -1323,7 +1480,12 @@ directive(
 
 directive('w-src', null, function($el, attrs) {
   const attr = attrs['w-src']
-  const value = this.scope.parse(attr)
+  const ctx = { view: this.view, el: $el[0], attr: 'w-src', expr: attr }
+  const value = safeParse(this.scope, attr, ctx)
+  if (isNone(value)) {
+    report(`w-src получил ${value}: src не выставлен, запрос не отправлен`, { ...ctx, scope: this.scope })
+    return
+  }
   $el.attr('src', value)
 })
 

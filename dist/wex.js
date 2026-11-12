@@ -155,6 +155,7 @@ if (typeof window !== 'undefined') {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return View; });
+/* unused harmony export config */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return component; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return directive; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return filter; });
@@ -167,12 +168,6 @@ if (typeof window !== 'undefined') {
 /* harmony import */ var ts_fns__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(16);
 /* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9);
 /* harmony import */ var _store__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(15);
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
@@ -187,6 +182,12 @@ function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present,
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 
 
 
@@ -195,6 +196,85 @@ var vmId = 0;
 var $ = null;
 function View() {}
 var SYMBOL = {};
+var config = {
+  // по умолчанию debug включён только на localhost
+  debug: typeof location !== 'undefined' && /^(localhost|127\.|\[::1\])/.test(location.hostname),
+  maxDepth: 50,
+  // максимальная вложенность компонентов
+  syncMounts: 50,
+  // сколько компонентов монтировать синхронно за тик, остальные по кадрам (Infinity = как раньше)
+  mountBudget: 10 // мс на кадр для отложенного монтирования
+};
+var reported = new Set();
+function scopeSnapshot(scp) {
+  var out = {};
+  try {
+    var data = scp.data || {};
+    for (var k in data) {
+      var v = data[k];
+      out[k] = v && _typeof(v) === 'object' ? Array.isArray(v) ? "Array(".concat(v.length, ")") : "{".concat(Object.keys(v).slice(0, 6).join(', '), "}") : v;
+    }
+  } catch (e) {}
+  return out;
+}
+
+// level: 'error' пишется всегда, 'warn' только при config.debug
+function report(title) {
+  var ctx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var level = ctx.level || 'warn';
+  if (level !== 'error' && !config.debug) return;
+  var path = ctx.view && ctx.view.__path || ['root'];
+  var key = [title, path.join('>'), ctx.attr, ctx.expr].join('|');
+  if (reported.has(key)) return; // не спамим 1500 одинаковых сообщений
+  reported.add(key);
+  var color = level === 'error' ? '#e11d48' : '#d97706';
+  console.groupCollapsed("%cWex%c ".concat(title), "background:".concat(color, ";color:#fff;padding:1px 5px;border-radius:3px"), '');
+  console.log('Цепочка компонентов:', path.join(' › '));
+  if (ctx.attr) console.log('Атрибут:', ctx.attr);
+  if (ctx.expr) console.log('Выражение:', ctx.expr);
+  if (ctx.source) console.log('Место в шаблоне:', ctx.source);
+  if (ctx.scope) console.log('Доступные переменные:', scopeSnapshot(ctx.scope));
+  if (ctx.el) console.log('Элемент (можно кликнуть):', ctx.el);
+  if (ctx.hint) console.log('Подсказка:', ctx.hint);
+  console.groupEnd();
+}
+function safeParse(scp, exp, ctx) {
+  try {
+    return scp.parse(exp);
+  } catch (e) {
+    report("\u041E\u0448\u0438\u0431\u043A\u0430 \u0432 \u0432\u044B\u0440\u0430\u0436\u0435\u043D\u0438\u0438 \xAB".concat(exp, "\xBB: ").concat(e.message), _objectSpread(_objectSpread({}, ctx), {}, {
+      expr: exp,
+      scope: scp,
+      level: 'error'
+    }));
+    return undefined;
+  }
+}
+function checkInterpolation(text, scp, ctx) {
+  if (!config.debug || text.indexOf('{{') === -1) return;
+  text.replace(/\{\{([\s\S]+?)\}\}/g, function (m, raw) {
+    var expr = raw.trim();
+    try {
+      var v = scp.parse(expr);
+      if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isNone */ "j"])(v)) {
+        report("\xAB{{ ".concat(expr, " }}\xBB \u0432\u0435\u0440\u043D\u0443\u043B ").concat(v), _objectSpread(_objectSpread({}, ctx), {}, {
+          expr: expr,
+          scope: scp
+        }));
+      }
+    } catch (e) {
+      if (expr.indexOf('|') === -1) {
+        // фильтры parse может не понимать
+        report("\u041E\u0448\u0438\u0431\u043A\u0430 \u0432 \xAB{{ ".concat(expr, " }}\xBB: ").concat(e.message), _objectSpread(_objectSpread({}, ctx), {}, {
+          expr: expr,
+          scope: scp,
+          level: 'error'
+        }));
+      }
+    }
+    return m;
+  });
+}
 
 // ---------------
 
@@ -338,21 +418,34 @@ function compile($root, components, directives, state, view, _ref2) {
   var _interpolate = function interpolate($element) {
     var scp = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : scope;
     $element.each(function () {
+      var _this = this;
       var attrs = _toConsumableArray(this.attributes);
       var $this = $(this);
       attrs.forEach(function (_ref4) {
         var name = _ref4.name,
           value = _ref4.value;
-        // HTML standard not allow @attr
-        if (name.indexOf('@') === 0) {
+        if (name.indexOf('@') === 0) return;
+        checkInterpolation(value, scp, {
+          view: view,
+          el: _this,
+          attr: name
+        });
+        var text = scp.interpolate(value);
+
+        // атрибут целиком из одного {{ }} и результат пустой: не пишем "undefined" в DOM
+        if ((text === 'undefined' || text === 'null') && /^\{\{[^}]+\}\}$/.test(value.trim())) {
+          $this.removeAttr(name);
           return;
         }
-        var text = scp.interpolate(value);
         $this.attr(name, text);
       });
       var children = _toConsumableArray(this.childNodes);
       children.forEach(function (child) {
         if (child.nodeName === '#text') {
+          checkInterpolation(child.textContent, scp, {
+            view: view,
+            el: _this
+          });
           child.textContent = scp.interpolate(child.textContent);
         } else if (child.nodeName.indexOf('#') !== 0) {
           _interpolate($(child), scp);
@@ -384,7 +477,8 @@ function compile($root, components, directives, state, view, _ref2) {
         attrs: attrs,
         els: els,
         slot: slot,
-        scope: scope
+        scope: scope,
+        source: config.debug ? el.outerHTML.slice(0, 160) : ''
       };
       var useComponent = function useComponent(proto) {
         // экземпляр создаётся в affect() и привязывается к конкретному DOM-элементу
@@ -647,12 +741,14 @@ function diffAndPatch($root, nodes) {
     for (var i = parentNode.childNodes.length - 1, start = nextChildren.length; i >= start; i--) {
       var child = parentNode.childNodes[i];
       if (child.__jQvmComponent) {
+        child.__jQvmComponent.__cancelled = true;
         child.__jQvmComponent.unmount();
         delete child.__jQvmComponent;
       }
       var all = $(child).find('*');
       all.each(function () {
         if (this.__jQvmComponent) {
+          this.__jQvmComponent.__cancelled = true;
           this.__jQvmComponent.unmount();
           delete this.__jQvmComponent;
         }
@@ -662,6 +758,55 @@ function diffAndPatch($root, nodes) {
   };
   diffAndPatchChildren($root, nodes);
 }
+
+// ---------- очередь отложенного монтирования ----------
+var mountQueue = [];
+var mountScheduled = false;
+var flushing = false;
+var collecting = null;
+var syncCount = 0;
+var nextFrame = function nextFrame(fn) {
+  return document.hidden ? setTimeout(fn, 0) : requestAnimationFrame(fn);
+};
+function shouldDefer() {
+  return flushing || syncCount >= config.syncMounts;
+}
+function noteSyncMount() {
+  if (syncCount === 0) Promise.resolve().then(function () {
+    syncCount = 0;
+  });
+  syncCount++;
+}
+function scheduleMount(job) {
+  // задачи, созданные внутри текущей задачи (дети), встают в начало очереди:
+  // получается обход в глубину, то есть порядок как в документе
+  if (collecting) collecting.push(job);else mountQueue.push(job);
+  if (!mountScheduled) {
+    mountScheduled = true;
+    nextFrame(flushMounts);
+  }
+}
+function flushMounts() {
+  mountScheduled = false;
+  flushing = true;
+  var start = performance.now();
+  while (mountQueue.length && performance.now() - start < config.mountBudget) {
+    var job = mountQueue.shift();
+    collecting = [];
+    try {
+      job();
+    } catch (e) {
+      console.error(e);
+    }
+    if (collecting.length) mountQueue.unshift.apply(mountQueue, _toConsumableArray(collecting));
+    collecting = null;
+  }
+  flushing = false;
+  if (mountQueue.length) {
+    mountScheduled = true;
+    nextFrame(flushMounts);
+  }
+}
 function affect($root, scope, view) {
   var root = $root[0];
   var records = root.__jQvmCompiledRecords = root.__jQvmCompiledRecords || [];
@@ -670,37 +815,63 @@ function affect($root, scope, view) {
       attrs = record.attrs,
       els = record.els,
       proto = record.view,
-      localScope = record.scope;
+      localScope = record.scope,
+      name = record.name,
+      source = record.source;
     var finalScope = localScope && localScope !== scope ? localScope : scope;
     if (proto) {
       var state = record.state,
         slot = record.slot;
       var slotInner = slot.template.trim();
       els.forEach(function (el) {
-        if (el.nodeName.indexOf('#') === 0) {
-          return;
-        }
+        if (el.nodeName.indexOf('#') === 0) return;
         var $el = $(el);
-
-        // экземпляр принадлежит DOM-элементу. Если diffAndPatch оставил старый
-        // элемент, берём его компонент, иначе создаём новый клон
         var component = el.__jQvmComponent;
         var isNew = !component;
         if (isNew) {
+          // --- защита от бесконечной рекурсии ---
+          var parentPath = view.__path || ['root'];
+          if (parentPath.length > config.maxDepth) {
+            report("\u041F\u0440\u0435\u0432\u044B\u0448\u0435\u043D\u0430 \u0433\u043B\u0443\u0431\u0438\u043D\u0430 \u0432\u043B\u043E\u0436\u0435\u043D\u043D\u043E\u0441\u0442\u0438 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432 (".concat(config.maxDepth, "), \xAB").concat(name, "\xBB \u043D\u0435 \u0441\u043E\u0437\u0434\u0430\u043D"), {
+              level: 'error',
+              view: view,
+              el: el,
+              source: source,
+              hint: 'Рекурсивный компонент без условия выхода или циклические данные. Остановите рекурсию через w-if.'
+            });
+            $el.empty().attr('data-wex-error', 'max-depth');
+            return;
+          }
           component = proto.clone();
+          component.__path = parentPath.concat(name);
         }
         record.component = component;
+
+        // --- props ---
         var outside = {};
         Object(ts_fns__WEBPACK_IMPORTED_MODULE_3__[/* each */ "b"])(attrs, function (exp, attr) {
           if (attr.indexOf(':') === 0) {
-            outside[Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* camelCase */ "a"])(attr.substring(1))] = finalScope.parse(exp);
+            var ctx = {
+              view: view,
+              el: el,
+              attr: attr,
+              expr: exp,
+              source: source
+            };
+            var value = safeParse(finalScope, exp, ctx);
+            if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isNone */ "j"])(value)) {
+              report("\u041F\u0440\u043E\u043F \xAB".concat(attr.substring(1), "\xBB \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u0430 \xAB").concat(name, "\xBB \u043F\u043E\u043B\u0443\u0447\u0438\u043B ").concat(value), _objectSpread(_objectSpread({}, ctx), {}, {
+                scope: finalScope
+              }));
+            }
+            outside[Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* camelCase */ "a"])(attr.substring(1))] = value;
           } else if (attr.indexOf('@') === 0) {
             var event = Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* camelCase */ "a"])(attr.substring(1));
             var _parseKey = Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* parseKey */ "f"])(exp),
               _parseKey2 = _slicedToArray(_parseKey, 2),
-              name = _parseKey2[0],
+              fname = _parseKey2[0],
               params = _parseKey2[1];
-            var fn = view.fn(name);
+            var fn = view.fn(fname);
             outside['@' + event] = function () {
               var res = null;
               if (params) {
@@ -711,12 +882,10 @@ function affect($root, scope, view) {
               } else {
                 res = fn.call(view, state);
               }
-              if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(res)) {
-                for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-                  args[_key] = arguments[_key];
-                }
-                return res.apply(this, args);
+              for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+                args[_key] = arguments[_key];
               }
+              if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isFunction */ "h"])(res)) return res.apply(this, args);
             };
           } else if (attr.indexOf('_') !== 0) {
             outside[Object(_utils_js__WEBPACK_IMPORTED_MODULE_5__[/* camelCase */ "a"])(attr)] = exp;
@@ -727,9 +896,23 @@ function affect($root, scope, view) {
           var scope = this.scope;
           return slotInner ? slot(scope) : '';
         });
+
+        // --- монтирование ---
         if (isNew) {
           el.__jQvmComponent = component;
-          component.mount($el);
+          if (shouldDefer()) {
+            component.__pending = true;
+            scheduleMount(function () {
+              component.__pending = false;
+              if (el.__jQvmComponent !== component || component.__cancelled) return;
+              component.mount($el);
+            });
+          } else {
+            noteSyncMount();
+            component.mount($el);
+          }
+        } else if (component.__pending) {
+          // ждёт своей очереди; свежие props уже переданы выше
         } else if (!$el.attr('w-name')) {
           component.mount($el);
         } else if (slotInner) {
@@ -740,9 +923,7 @@ function affect($root, scope, view) {
         delete el.__jQvmCompiledRecord;
       });
     }
-    if (typeof affect !== 'function') {
-      return;
-    }
+    if (typeof affect !== 'function') return;
     els.forEach(function (el) {
       var $el = $(el);
       var ctx = {
@@ -752,9 +933,7 @@ function affect($root, scope, view) {
         component: record.component
       };
       var revoke = affect.call(ctx, $el, attrs);
-      if (typeof revoke === 'function') {
-        record.revoke = revoke;
-      }
+      if (typeof revoke === 'function') record.revoke = revoke;
     });
   });
 }
@@ -1406,7 +1585,16 @@ function sanitizeSvg(str) {
 directive('w-html', function ($el, attrs) {
   // принимаем и w-html="item.icon", и w-html="{{ item.icon }}"
   var exp = attrs['w-html'].replace(/^\{\{\s*|\s*\}\}$/g, '');
-  var html = this.scope.parse(exp);
+  var ctx = {
+    view: this.view,
+    el: $el[0],
+    attr: 'w-html',
+    expr: exp
+  };
+  var html = safeParse(this.scope, exp, ctx);
+  if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isNone */ "j"])(html)) report("w-html \u043F\u043E\u043B\u0443\u0447\u0438\u043B ".concat(html), _objectSpread(_objectSpread({}, ctx), {}, {
+    scope: this.scope
+  }));
   $el.removeAttr('w-html');
   $el.html(sanitizeSvg(Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isNone */ "j"])(html) ? '' : String(html)));
 });
@@ -1450,7 +1638,7 @@ directive('w-selected', null, function ($el, attrs) {
   $el.prop('selected', !!value);
 });
 directive('w-bind', null, function ($el, attrs) {
-  var _this = this;
+  var _this2 = this;
   var attr = attrs['w-bind'];
   var value = this.scope.parse(attr);
   var event = $el.is('[type=checkbox],[type=radio],[type=color],[type=date],[type=datetime-local],[type=week],[type=file],select') ? 'change' : 'input';
@@ -1465,7 +1653,7 @@ directive('w-bind', null, function ($el, attrs) {
   }
   var callback = function callback(e) {
     var value = checkbox ? $el.prop('checked') : e.target.value;
-    _this.scope.assign(attr, value);
+    _this2.scope.assign(attr, value);
   };
   $el.on(event, callback);
   return function () {
@@ -1474,7 +1662,19 @@ directive('w-bind', null, function ($el, attrs) {
 });
 directive('w-src', null, function ($el, attrs) {
   var attr = attrs['w-src'];
-  var value = this.scope.parse(attr);
+  var ctx = {
+    view: this.view,
+    el: $el[0],
+    attr: 'w-src',
+    expr: attr
+  };
+  var value = safeParse(this.scope, attr, ctx);
+  if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isNone */ "j"])(value)) {
+    report("w-src \u043F\u043E\u043B\u0443\u0447\u0438\u043B ".concat(value, ": src \u043D\u0435 \u0432\u044B\u0441\u0442\u0430\u0432\u043B\u0435\u043D, \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D"), _objectSpread(_objectSpread({}, ctx), {}, {
+      scope: this.scope
+    }));
+    return;
+  }
   $el.attr('src', value);
 });
 directive('w-on', null, function ($el, attrs) {
