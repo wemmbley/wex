@@ -839,11 +839,13 @@ function vm(initState = {}) {
       if (!realKey) return
 
 		const hash = getObjectHash(value)
-		console.log('prop', key, 'hash', hash, 'prev', outsideHashes[key], 'child keys', Object.keys(state[realKey] || {}).length, 'value keys', Object.keys(value || {}).length)
+		
 		if (!init && outsideHashes[key] === hash && getObjectHash(state[realKey]) === hash) return
 		outsideHashes[key] = hash
 
-		next[realKey] = value
+		next[realKey] = cloneState(value)
+		// ранее здесь было прямое присвоение value но у нас кривой CreateProxy из ts-fns модуля. createProxy ребёнка не принимает уже проксированное значение: внутри всегда 0 почему-то. Решение - клонировать. Там внутри все передается.
+		// Побочный эффект: Ребёнок теперь работает со своей копией пропа. Если где-то ребёнок пишет в проп и ждёт, что родитель увидит изменение, это перестанет работать. Для пропов только на чтение, как menu, posts и article, это не мешает. Если у вас есть компоненты, которые пишут в проп, лучше передавать им колбэк через @event.
     })
 
 	  Object.assign(state, next)
