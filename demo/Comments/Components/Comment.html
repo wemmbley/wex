@@ -1,0 +1,23 @@
+<template>
+    <div w-for="comment in comments">
+        <div class="flex mb-5">
+            <img class="w-14 h-14 rounded-full object-cover"
+                 src="{{ comment.avatar }}" alt="Test">
+            <div class="ml-3">
+                <p class="font-bold">{{ comment.name }}</p>
+                <p class="font-light">{{ comment.text }}</p>
+            </div>
+        </div>
+        <div w-if="replies != []" class="flex col ml-10">
+            <Comment :comments="comment.replies"></Comment>
+        </div>
+    </div>
+</template>
+
+<script type="module">
+    export default $template => $template
+        .state({
+            comments: [],
+        })
+        .component('Comment', '/Demo/Comments/Components/Comment.html');
+</script>

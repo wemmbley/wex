@@ -1,0 +1,33 @@
+[
+  {
+    "name": "Homer Simpson",
+    "avatar": "/Test/Images/Homer.png",
+    "text": "Мой комментарий номер один",
+    "replies": [
+      {
+        "name": "Bart Simpson",
+        "avatar": "/Test/Images/Bart.png",
+        "text": "Ответ моему отцу",
+        "replies": [
+          {
+            "name": "Homer Simpson",
+            "avatar": "/Test/Images/Homer.png",
+            "text": "Ответ моему сыну"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Bart Simpson",
+    "avatar": "/Test/Images/Bart.png",
+    "text": "123",
+    "replies": [
+      {
+        "name": "Homer Simpson",
+        "avatar": "/Test/Images/Homer.png",
+        "text": "555"
+      }
+    ]
+  }
+]
