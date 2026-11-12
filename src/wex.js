@@ -122,53 +122,62 @@ const nativeImport = new Function('u', 'return import(u)') // в обход ба
 const remoteCache = {}
 
 function loadRemote(url) {
-  if (remoteCache[url]) {
-    return remoteCache[url]
-  }
+  if (remoteCache[url]) return remoteCache[url]
 
   const entry = remoteCache[url] = { view: null, waiters: new Set() }
 
-  fetch(url)
-      .then((r) => {
-        if (!r.ok) {
-          throw new Error(`Wex: cannot load component ${url} (${r.status})`)
+  const fetchText = async (tries = 3) => {
+    for (let i = 0; ; i ++) {
+      try {
+        const r = await fetch(url)
+        if (!r.ok) throw new Error(`Wex: cannot load component ${url} (${r.status})`)
+        return await r.text()
+      }
+      catch (e) {
+        if (i >= tries - 1) throw e
+        await new Promise(res => setTimeout(res, 300 * 2 ** i))
+      }
+    }
+  }
+
+  fetchText()
+    .then(async (html) => {
+      const doc = new DOMParser().parseFromString(html, 'text/html')
+      const tpl = doc.querySelector('template')
+      if (!tpl) throw new Error(`Wex: no <template> in ${url}`)
+
+      const $tpl = $(`<template>${tpl.innerHTML}</template>`)
+      const code = doc.querySelector('script[type="module"]')?.textContent
+
+      let view = null
+      if (code) {
+        const blobUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))
+        try {
+          const mod = await nativeImport(blobUrl)
+          view = mod.default($tpl)
         }
-        return r.text()
+        finally {
+          URL.revokeObjectURL(blobUrl)
+        }
+      }
+      else {
+        view = $tpl.vm()
+      }
+
+      if (!(view instanceof View)) {
+        throw new Error(`Wex: ${url} must export default a function returning a view`)
+      }
+
+      entry.view = view
+      const waiters = [...entry.waiters]
+      entry.waiters.clear()
+      // ошибка одного ожидающего не должна остановить остальных
+      waiters.forEach((v) => {
+        try { v.update(true) }
+        catch (e) { console.error(`Wex: ошибка обновления после загрузки ${url}`, e) }
       })
-      .then(async (html) => {
-        const doc = new DOMParser().parseFromString(html, 'text/html')
-        const tpl = doc.querySelector('template')
-        if (!tpl) {
-          throw new Error(`Wex: no <template> in ${url}`)
-        }
-
-        const $tpl = $(`<template>${tpl.innerHTML}</template>`)
-        const code = doc.querySelector('script[type="module"]')?.textContent
-
-        let view = null
-        if (code) {
-          const blobUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))
-          try {
-            const mod = await nativeImport(blobUrl)
-            view = mod.default($tpl)
-          }
-          finally {
-            URL.revokeObjectURL(blobUrl)
-          }
-        }
-        else {
-          view = $tpl.vm()
-        }
-
-        if (!(view instanceof View)) {
-          throw new Error(`Wex: ${url} must export default a function returning a view`)
-        }
-
-        entry.view = view
-        entry.waiters.forEach(v => v.update(true))
-        entry.waiters.clear()
-      })
-      .catch(e => console.error(e))
+    })
+    .catch(e => console.error(e))
 
   return entry
 }
@@ -1518,52 +1527,35 @@ directive('w-on', null, function($el, attrs) {
 })
 
 directive('w-transition', null, function ($el, attrs) {
+  const el = $el[0]
+  // повторный рендер не должен заново гасить уже показанный элемент
+  if (el.__wTransitionDone) return
+  el.__wTransitionDone = true
+
   const raw = attrs['w-transition']
-
-  // дефолт
   const transition = raw || 'opacity 0.25s ease'
-
-  // нормализуем (если передали "ease 0.3s")
   const hasProp = /(opacity|all|transform)/.test(transition)
   const finalTransition = hasProp ? transition : `opacity ${transition}`
 
-  // применяем transition
-  $el.css({
-    transition: finalTransition,
-    opacity: 0
-  })
+  $el.css({ transition: finalTransition, opacity: 0 })
 
-  // 👉 ENTER (появление)
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      $el.css('opacity', 1)
-    })
-  })
-
-  // 👉 LEAVE (исчезновение)
-  const el = $el[0]
+  const show = () => $el.css('opacity', 1)
+  if (document.hidden) {
+    setTimeout(show, 0)
+  } else {
+    requestAnimationFrame(() => requestAnimationFrame(show))
+  }
+  setTimeout(show, 500) // страховка, если кадры так и не придут
 
   const originalRemove = el.remove
-
   el.remove = function () {
-    // запускаем fade-out
     $el.css('opacity', 0)
-
     const duration = getComputedStyle(el).transitionDuration
-
-    const ms = duration.includes('ms')
-        ? parseFloat(duration)
-        : parseFloat(duration) * 1000
-
-    setTimeout(() => {
-      originalRemove.call(el)
-    }, ms || 250)
+    const ms = duration.includes('ms') ? parseFloat(duration) : parseFloat(duration) * 1000
+    setTimeout(() => originalRemove.call(el), ms || 250)
   }
 
-  // cleanup
-  return () => {
-    el.remove = originalRemove
-  }
+  return () => { el.remove = originalRemove }
 })
 
 component(

@@ -168,16 +168,17 @@ if (typeof window !== 'undefined') {
 /* harmony import */ var ts_fns__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(16);
 /* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9);
 /* harmony import */ var _store__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(15);
-function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
-function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _regeneratorValues(e) { if (null != e) { var t = e["function" == typeof Symbol && Symbol.iterator || "@@iterator"], r = 0; if (t) return t.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) return { next: function next() { return e && r >= e.length && (e = void 0), { value: e && e[r++], done: !e }; } }; } throw new TypeError(_typeof(e) + " is not iterable"); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
@@ -310,29 +311,97 @@ function filter(name, fn) {
 var nativeImport = new Function('u', 'return import(u)'); // в обход бандлера
 var remoteCache = {};
 function loadRemote(url) {
-  if (remoteCache[url]) {
-    return remoteCache[url];
-  }
+  if (remoteCache[url]) return remoteCache[url];
   var entry = remoteCache[url] = {
     view: null,
     waiters: new Set()
   };
-  fetch(url).then(function (r) {
-    if (!r.ok) {
-      throw new Error("Wex: cannot load component ".concat(url, " (").concat(r.status, ")"));
-    }
-    return r.text();
-  }).then(/*#__PURE__*/function () {
-    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(html) {
+  var fetchText = /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+      var tries,
+        _loop,
+        _ret,
+        i,
+        _args2 = arguments;
+      return _regenerator().w(function (_context2) {
+        while (1) switch (_context2.n) {
+          case 0:
+            tries = _args2.length > 0 && _args2[0] !== undefined ? _args2[0] : 3;
+            _loop = /*#__PURE__*/_regenerator().m(function _loop(i) {
+              var r, _t, _t2;
+              return _regenerator().w(function (_context) {
+                while (1) switch (_context.p = _context.n) {
+                  case 0:
+                    _context.p = 0;
+                    _context.n = 1;
+                    return fetch(url);
+                  case 1:
+                    r = _context.v;
+                    if (r.ok) {
+                      _context.n = 2;
+                      break;
+                    }
+                    throw new Error("Wex: cannot load component ".concat(url, " (").concat(r.status, ")"));
+                  case 2:
+                    _context.n = 3;
+                    return r.text();
+                  case 3:
+                    _t = _context.v;
+                    return _context.a(2, {
+                      v: _t
+                    });
+                  case 4:
+                    _context.p = 4;
+                    _t2 = _context.v;
+                    if (!(i >= tries - 1)) {
+                      _context.n = 5;
+                      break;
+                    }
+                    throw _t2;
+                  case 5:
+                    _context.n = 6;
+                    return new Promise(function (res) {
+                      return setTimeout(res, 300 * Math.pow(2, i));
+                    });
+                  case 6:
+                    return _context.a(2);
+                }
+              }, _loop, null, [[0, 4]]);
+            });
+            i = 0;
+          case 1:
+            return _context2.d(_regeneratorValues(_loop(i)), 2);
+          case 2:
+            _ret = _context2.v;
+            if (!_ret) {
+              _context2.n = 3;
+              break;
+            }
+            return _context2.a(2, _ret.v);
+          case 3:
+            i++;
+            _context2.n = 1;
+            break;
+          case 4:
+            return _context2.a(2);
+        }
+      }, _callee);
+    }));
+    return function fetchText() {
+      return _ref.apply(this, arguments);
+    };
+  }();
+  fetchText().then(/*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(html) {
       var _doc$querySelector;
-      var doc, tpl, $tpl, code, view, blobUrl, mod;
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.p = _context.n) {
+      var doc, tpl, $tpl, code, view, blobUrl, mod, waiters;
+      return _regenerator().w(function (_context3) {
+        while (1) switch (_context3.p = _context3.n) {
           case 0:
             doc = new DOMParser().parseFromString(html, 'text/html');
             tpl = doc.querySelector('template');
             if (tpl) {
-              _context.n = 1;
+              _context3.n = 1;
               break;
             }
             throw new Error("Wex: no <template> in ".concat(url));
@@ -341,46 +410,52 @@ function loadRemote(url) {
             code = (_doc$querySelector = doc.querySelector('script[type="module"]')) === null || _doc$querySelector === void 0 ? void 0 : _doc$querySelector.textContent;
             view = null;
             if (!code) {
-              _context.n = 6;
+              _context3.n = 6;
               break;
             }
             blobUrl = URL.createObjectURL(new Blob([code], {
               type: 'text/javascript'
             }));
-            _context.p = 2;
-            _context.n = 3;
+            _context3.p = 2;
+            _context3.n = 3;
             return nativeImport(blobUrl);
           case 3:
-            mod = _context.v;
+            mod = _context3.v;
             view = mod["default"]($tpl);
           case 4:
-            _context.p = 4;
+            _context3.p = 4;
             URL.revokeObjectURL(blobUrl);
-            return _context.f(4);
+            return _context3.f(4);
           case 5:
-            _context.n = 7;
+            _context3.n = 7;
             break;
           case 6:
             view = $tpl.vm();
           case 7:
             if (view instanceof View) {
-              _context.n = 8;
+              _context3.n = 8;
               break;
             }
             throw new Error("Wex: ".concat(url, " must export default a function returning a view"));
           case 8:
             entry.view = view;
-            entry.waiters.forEach(function (v) {
-              return v.update(true);
-            });
+            waiters = _toConsumableArray(entry.waiters);
             entry.waiters.clear();
+            // ошибка одного ожидающего не должна остановить остальных
+            waiters.forEach(function (v) {
+              try {
+                v.update(true);
+              } catch (e) {
+                console.error("Wex: \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u043E\u0441\u043B\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 ".concat(url), e);
+              }
+            });
           case 9:
-            return _context.a(2);
+            return _context3.a(2);
         }
-      }, _callee, null, [[2,, 4, 5]]);
+      }, _callee2, null, [[2,, 4, 5]]);
     }));
     return function (_x) {
-      return _ref.apply(this, arguments);
+      return _ref2.apply(this, arguments);
     };
   }())["catch"](function (e) {
     return console.error(e);
@@ -407,11 +482,11 @@ function prepare($root) {
   // clear
   records.length = 0;
 }
-function compile($root, components, directives, state, view, _ref2) {
-  var _ref3 = _slicedToArray(_ref2, 3),
-    template = _ref3[0],
-    scope = _ref3[1],
-    isolate = _ref3[2];
+function compile($root, components, directives, state, view, _ref3) {
+  var _ref4 = _slicedToArray(_ref3, 3),
+    template = _ref4[0],
+    scope = _ref4[1],
+    isolate = _ref4[2];
   var root = $root[0];
   var records = root.__jQvmCompiledRecords = root.__jQvmCompiledRecords || [];
   var $element = $("<div />").html(template);
@@ -421,9 +496,9 @@ function compile($root, components, directives, state, view, _ref2) {
       var _this = this;
       var attrs = _toConsumableArray(this.attributes);
       var $this = $(this);
-      attrs.forEach(function (_ref4) {
-        var name = _ref4.name,
-          value = _ref4.value;
+      attrs.forEach(function (_ref5) {
+        var name = _ref5.name,
+          value = _ref5.value;
         if (name.indexOf('@') === 0) return;
         checkInterpolation(value, scp, {
           view: view,
@@ -538,11 +613,11 @@ function compile($root, components, directives, state, view, _ref2) {
 
   // directives have higher priority than components
 
-  directives.forEach(function (_ref5) {
-    var _ref6 = _slicedToArray(_ref5, 3),
-      name = _ref6[0],
-      onCompile = _ref6[1],
-      onAffect = _ref6[2];
+  directives.forEach(function (_ref6) {
+    var _ref7 = _slicedToArray(_ref6, 3),
+      name = _ref7[0],
+      onCompile = _ref7[1],
+      onAffect = _ref7[2];
     var $els = $element.find("[".concat(name, "]"));
     $els.each(function () {
       var el = this;
@@ -584,11 +659,11 @@ function compile($root, components, directives, state, view, _ref2) {
       });
     });
   });
-  components.forEach(function (_ref7) {
-    var _ref8 = _slicedToArray(_ref7, 3),
-      name = _ref8[0],
-      compile = _ref8[1],
-      affect = _ref8[2];
+  components.forEach(function (_ref8) {
+    var _ref9 = _slicedToArray(_ref8, 3),
+      name = _ref9[0],
+      compile = _ref9[1],
+      affect = _ref9[2];
     if (name === 'slot') {
       return;
     }
@@ -1317,11 +1392,11 @@ function vm() {
         var _event = item.event,
           _selector = item.selector,
           handle = item.handle;
-        var _args2 = [_event, _selector, handle].filter(Boolean);
+        var _args4 = [_event, _selector, handle].filter(Boolean);
         if (_event[0] === '$') {
-          $template.off.apply($template, _toConsumableArray(_args2));
+          $template.off.apply($template, _toConsumableArray(_args4));
         } else {
-          $root.off.apply($root, _toConsumableArray(_args2));
+          $root.off.apply($root, _toConsumableArray(_args4));
         }
         actions.splice(i, 1);
       }
@@ -1569,9 +1644,9 @@ function sanitizeSvg(str) {
   });
   tpl.content.querySelectorAll('*').forEach(function (el) {
     ;
-    _toConsumableArray(el.attributes).forEach(function (_ref9) {
-      var name = _ref9.name,
-        value = _ref9.value;
+    _toConsumableArray(el.attributes).forEach(function (_ref0) {
+      var name = _ref0.name,
+        value = _ref0.value;
       var n = name.toLowerCase();
       var v = value.trim().toLowerCase();
       var badHref = (n === 'href' || n === 'xlink:href') && !v.startsWith('#');
@@ -1713,42 +1788,39 @@ directive('w-on', null, function ($el, attrs) {
   };
 });
 directive('w-transition', null, function ($el, attrs) {
+  var el = $el[0];
+  // повторный рендер не должен заново гасить уже показанный элемент
+  if (el.__wTransitionDone) return;
+  el.__wTransitionDone = true;
   var raw = attrs['w-transition'];
-
-  // дефолт
   var transition = raw || 'opacity 0.25s ease';
-
-  // нормализуем (если передали "ease 0.3s")
   var hasProp = /(opacity|all|transform)/.test(transition);
   var finalTransition = hasProp ? transition : "opacity ".concat(transition);
-
-  // применяем transition
   $el.css({
     transition: finalTransition,
     opacity: 0
   });
-
-  // 👉 ENTER (появление)
-  requestAnimationFrame(function () {
+  var show = function show() {
+    return $el.css('opacity', 1);
+  };
+  if (document.hidden) {
+    setTimeout(show, 0);
+  } else {
     requestAnimationFrame(function () {
-      $el.css('opacity', 1);
+      return requestAnimationFrame(show);
     });
-  });
+  }
+  setTimeout(show, 500); // страховка, если кадры так и не придут
 
-  // 👉 LEAVE (исчезновение)
-  var el = $el[0];
   var originalRemove = el.remove;
   el.remove = function () {
-    // запускаем fade-out
     $el.css('opacity', 0);
     var duration = getComputedStyle(el).transitionDuration;
     var ms = duration.includes('ms') ? parseFloat(duration) : parseFloat(duration) * 1000;
     setTimeout(function () {
-      originalRemove.call(el);
+      return originalRemove.call(el);
     }, ms || 250);
   };
-
-  // cleanup
   return function () {
     el.remove = originalRemove;
   };
