@@ -1,0 +1,13 @@
+<template>
+    <span class="card">{{ title }}</span>
+</template>
+
+<script type="module">
+    export default $template => $template
+        .state({
+            title: '',
+        })
+        .on('$mount', () => {
+            window.__mounted = (window.__mounted || 0) + 1
+        })
+</script>

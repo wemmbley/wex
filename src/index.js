@@ -1,14 +1,16 @@
 import { useJQuery, component, directive, filter, View } from './wex.js'
 import { shareState } from './shared-state.js'
 import { createAsyncComponent } from './async.js'
-import { createRouter } from './router.js'
+import { createRouter, route } from './router.js'
 import { createWire, $wire } from './wire'
-import { setupModal } from './modal.js'  // директива регистрируется сразу при импорте
+import { createLazy } from './w-lazy.js'
+import './w-prefetch.js'
+import { setupModal } from './modal.js'
 
 // use in browser
 if (typeof jQuery !== 'undefined') {
   useJQuery(jQuery)
-  setupModal(jQuery)  // патчим $.fn.modal когда $ уже готов
+  setupModal(jQuery)
 }
 
 export {
@@ -20,6 +22,8 @@ export {
   shareState,
   createAsyncComponent,
   createRouter,
+  route,
+  createLazy,
   createWire,
   $wire,
 }

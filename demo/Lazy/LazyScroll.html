@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wex: w-lazy, комментарии и переписка</title>
+    <link rel="stylesheet" href="Styles.css">
+</head>
+<body>
+<h1>Wex: w-lazy</h1>
+<p class="hint">Данные подгружаются порциями, когда край списка подходит к экрану. Сервер здесь имитируется (задержка 700 мс), поэтому файл работает без бэкенда. Смотрите лог внизу: каждый запрос порции пишется туда.</p>
+
+<div class="cols">
+    <div>
+        <h2>1. Комментарии: подгрузка вниз</h2>
+        <p class="hint">Всего 50, по 10 за раз. Листайте вниз.</p>
+        <div id="comments-host">
+            <template id="comments">
+                <div class="status">{{ status }} &nbsp; (в списке: {{ comments.length }})</div>
+                <div class="scroller">
+                    <!-- w-lazy стоит на контейнере, внутри которого ТОЛЬКО список -->
+                    <div w-lazy="down">
+                        <div w-for="c in comments traceby id" class="comment">
+                            <b>{{ c.author }}</b><small>#{{ c.id }}</small>
+                            <div>{{ c.text }}</div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+    <div>
+        <h2>2. Переписка: подгрузка вверх</h2>
+        <p class="hint">Всего 100 сообщений, сразу видны последние 20. Крутите вверх: старые подгрузятся, а позиция прокрутки сохранится.</p>
+        <div id="chat-host">
+            <template id="chat">
+                <div class="status">{{ status }} &nbsp; (в списке: {{ messages.length }})</div>
+                <div class="scroller">
+                    <div class="chat" w-lazy="up">
+                        <div w-for="m in messages traceby id" class="msg {{ m.side }}">
+                            <small>#{{ m.id }} {{ m.author }}</small>
+                            {{ m.text }}
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+
+<h2 style="margin-top:24px">Лог</h2>
+<div id="log"></div>
+
+<script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
+<script src="../../dist/wex.js"></script>
+<script src="./Helpers.js"></script>
+<script>
+    // ---------- 1. комментарии (вниз) ----------
+    $('#comments')
+        .state({ comments: [], status: 'Ждём прокрутки...' })
+        .on('$lazy', (state, lazy) => {
+            log(`комментарии: запрос страницы ${lazy.page} (offset ${lazy.offset})`)
+            state.status = 'Загружаю...'
+
+            fetchComments(lazy.page)
+                .then((items) => {
+                    if (!items.length) {
+                        state.status = 'Комментарии закончились'
+                        log('комментарии: данных больше нет -> lazy.end()')
+                        return lazy.end()
+                    }
+                    items.forEach(item => state.comments.push(item))
+                    state.status = ''
+                    log(`комментарии: добавлено ${items.length}, lazy.done()`)
+                    lazy.done()   // строго ПОСЛЕ записи в state
+                })
+                .catch(() => lazy.fail())
+        })
+        .mount()
+
+    // ---------- 2. переписка (вверх) ----------
+    const initial = []
+    for (let i = CHAT_TOTAL - 19; i <= CHAT_TOTAL; i++) initial.push(makeMessage(i))   // последние 20
+
+    $('#chat')
+        .state({ messages: initial, status: 'Крутите вверх' })
+        // начальная порция уже отрисована: прокручиваем вниз, иначе верхний край окажется
+        // на экране и первая подгрузка уйдёт сама
+        .on('$mount', function () {
+            const box = this.find('.scroller')[0]
+            if (box) box.scrollTop = box.scrollHeight
+        })
+        .on('$lazy', (state, lazy) => {
+            const oldest = state.messages[0] ? state.messages[0].id : 0
+            log(`переписка: запрос сообщений старше #${oldest} (page ${lazy.page})`)
+            state.status = 'Загружаю старые...'
+
+            fetchOlder(oldest)
+                .then((older) => {
+                    if (!older.length) {
+                        state.status = 'Это начало переписки'
+                        log('переписка: достигнуто начало -> lazy.end()')
+                        return lazy.end()
+                    }
+                    state.messages.unshift(...older)   // старые идут в НАЧАЛО списка
+                    state.status = ''
+                    log(`переписка: добавлено ${older.length}, lazy.done()`)
+                    lazy.done()
+                })
+                .catch(() => lazy.fail())
+        })
+        .mount()
+
+    log('страница загружена, ждём прокрутки')
+</script>
+</body>
+</html>

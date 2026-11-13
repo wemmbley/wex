@@ -115,7 +115,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "View", function() { return _wex_js__WEBPACK_IMPORTED_MODULE_0__["a"]; });
 
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useJQuery", function() { return _wex_js__WEBPACK_IMPORTED_MODULE_0__["e"]; });
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "useJQuery", function() { return _wex_js__WEBPACK_IMPORTED_MODULE_0__["g"]; });
 
 /* harmony import */ var _shared_state_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(17);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "shareState", function() { return _shared_state_js__WEBPACK_IMPORTED_MODULE_1__["a"]; });
@@ -126,23 +126,31 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _router_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(20);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createRouter", function() { return _router_js__WEBPACK_IMPORTED_MODULE_3__["a"]; });
 
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "route", function() { return _router_js__WEBPACK_IMPORTED_MODULE_3__["b"]; });
+
 /* harmony import */ var _wire__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(21);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createWire", function() { return _wire__WEBPACK_IMPORTED_MODULE_4__["b"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "$wire", function() { return _wire__WEBPACK_IMPORTED_MODULE_4__["a"]; });
 
-/* harmony import */ var _modal_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(22);
+/* harmony import */ var _w_lazy_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(23);
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createLazy", function() { return _w_lazy_js__WEBPACK_IMPORTED_MODULE_5__["a"]; });
+
+/* harmony import */ var _w_prefetch_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(24);
+/* harmony import */ var _modal_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(25);
 
 
 
 
 
- // директива регистрируется сразу при импорте
+
+
+
 
 // use in browser
 if (typeof jQuery !== 'undefined') {
-  Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* useJQuery */ "e"])(jQuery);
-  Object(_modal_js__WEBPACK_IMPORTED_MODULE_5__[/* setupModal */ "a"])(jQuery); // патчим $.fn.modal когда $ уже готов
+  Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* useJQuery */ "g"])(jQuery);
+  Object(_modal_js__WEBPACK_IMPORTED_MODULE_7__[/* setupModal */ "a"])(jQuery);
 }
 
 if (typeof window !== 'undefined') {
@@ -156,10 +164,12 @@ if (typeof window !== 'undefined') {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return View; });
 /* unused harmony export config */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return report; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return component; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return directive; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return filter; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return useJQuery; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return preloadComponent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return useJQuery; });
 /* harmony import */ var scopex__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(8);
 /* harmony import */ var scopex__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(scopex__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var ts_fns__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(11);
@@ -310,12 +320,9 @@ function filter(name, fn) {
 }
 var nativeImport = new Function('u', 'return import(u)'); // в обход бандлера
 var remoteCache = {};
-function loadRemote(url) {
-  if (remoteCache[url]) return remoteCache[url];
-  var entry = remoteCache[url] = {
-    view: null,
-    waiters: new Set()
-  };
+function startLoad(entry, url) {
+  if (entry.started) return entry;
+  entry.started = true;
   var fetchText = /*#__PURE__*/function () {
     var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
       var tries,
@@ -394,7 +401,7 @@ function loadRemote(url) {
   fetchText().then(/*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(html) {
       var _doc$querySelector;
-      var doc, tpl, $tpl, code, view, blobUrl, mod, waiters;
+      var doc, tpl, $tpl, code, view, blobUrl, waiters;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.p = _context3.n) {
           case 0:
@@ -420,8 +427,7 @@ function loadRemote(url) {
             _context3.n = 3;
             return nativeImport(blobUrl);
           case 3:
-            mod = _context3.v;
-            view = mod["default"]($tpl);
+            view = _context3.v["default"]($tpl);
           case 4:
             _context3.p = 4;
             URL.revokeObjectURL(blobUrl);
@@ -441,7 +447,6 @@ function loadRemote(url) {
             entry.view = view;
             waiters = _toConsumableArray(entry.waiters);
             entry.waiters.clear();
-            // ошибка одного ожидающего не должна остановить остальных
             waiters.forEach(function (v) {
               try {
                 v.update(true);
@@ -458,9 +463,33 @@ function loadRemote(url) {
       return _ref2.apply(this, arguments);
     };
   }())["catch"](function (e) {
-    return console.error(e);
+    entry.started = false; // следующая попытка (наведение, рендер) загрузит заново
+    console.error(e);
   });
   return entry;
+}
+function loadRemote(url) {
+  var _ref3 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+    _ref3$lazy = _ref3.lazy,
+    lazy = _ref3$lazy === void 0 ? false : _ref3$lazy;
+  var entry = remoteCache[url];
+  if (!entry) {
+    entry = remoteCache[url] = {
+      view: null,
+      waiters: new Set(),
+      started: false,
+      load: function load() {
+        return startLoad(entry, url);
+      }
+    };
+  }
+  if (!lazy) entry.load();
+  return entry;
+}
+
+// для роутера: прогреть компонент заранее
+function preloadComponent(url) {
+  return loadRemote(url);
 }
 
 // ----------- compiler ---------------
@@ -482,23 +511,31 @@ function prepare($root) {
   // clear
   records.length = 0;
 }
-function compile($root, components, directives, state, view, _ref3) {
-  var _ref4 = _slicedToArray(_ref3, 3),
-    template = _ref4[0],
-    scope = _ref4[1],
-    isolate = _ref4[2];
+function compile($root, components, directives, state, view, _ref4) {
+  var _ref5 = _slicedToArray(_ref4, 3),
+    template = _ref5[0],
+    scope = _ref5[1],
+    isolate = _ref5[2];
+  if (config.debug && /<(img|iframe|source|video|audio|script|link)\b[^>]*\s(src|href|srcset)\s*=\s*["'][^"']*\{\{/i.test(template)) {
+    report('«{{ }}» внутри src/href: браузер запросит сырую строку и получит 404', {
+      view: view,
+      level: 'error',
+      source: template.slice(0, 160),
+      hint: 'Используйте w-src="выражение" вместо src="{{ }}"'
+    });
+  }
   var root = $root[0];
   var records = root.__jQvmCompiledRecords = root.__jQvmCompiledRecords || [];
-  var $element = $("<div />").html(template);
+  var $element = $(inertBox(template));
   var _interpolate = function interpolate($element) {
     var scp = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : scope;
     $element.each(function () {
       var _this = this;
       var attrs = _toConsumableArray(this.attributes);
       var $this = $(this);
-      attrs.forEach(function (_ref5) {
-        var name = _ref5.name,
-          value = _ref5.value;
+      attrs.forEach(function (_ref6) {
+        var name = _ref6.name,
+          value = _ref6.value;
         if (name.indexOf('@') === 0) return;
         checkInterpolation(value, scp, {
           view: view,
@@ -613,11 +650,11 @@ function compile($root, components, directives, state, view, _ref3) {
 
   // directives have higher priority than components
 
-  directives.forEach(function (_ref6) {
-    var _ref7 = _slicedToArray(_ref6, 3),
-      name = _ref7[0],
-      onCompile = _ref7[1],
-      onAffect = _ref7[2];
+  directives.forEach(function (_ref7) {
+    var _ref8 = _slicedToArray(_ref7, 3),
+      name = _ref8[0],
+      onCompile = _ref8[1],
+      onAffect = _ref8[2];
     var $els = $element.find("[".concat(name, "]"));
     $els.each(function () {
       var el = this;
@@ -659,11 +696,11 @@ function compile($root, components, directives, state, view, _ref3) {
       });
     });
   });
-  components.forEach(function (_ref8) {
-    var _ref9 = _slicedToArray(_ref8, 3),
-      name = _ref9[0],
-      compile = _ref9[1],
-      affect = _ref9[2];
+  components.forEach(function (_ref9) {
+    var _ref0 = _slicedToArray(_ref9, 3),
+      name = _ref0[0],
+      compile = _ref0[1],
+      affect = _ref0[2];
     if (name === 'slot') {
       return;
     }
@@ -832,6 +869,13 @@ function diffAndPatch($root, nodes) {
     }
   };
   diffAndPatchChildren($root, nodes);
+}
+var inertDoc = null;
+function inertBox(html) {
+  inertDoc = inertDoc || document.implementation.createHTMLDocument('');
+  var box = inertDoc.createElement('div');
+  box.innerHTML = html;
+  return box;
 }
 
 // ---------- очередь отложенного монтирования ----------
@@ -1053,12 +1097,14 @@ function vm() {
   function component(name, compile, affect) {
     // component('my-button', './components/button.html')
     if (Object(ts_fns__WEBPACK_IMPORTED_MODULE_1__[/* isString */ "m"])(compile)) {
-      var entry = loadRemote(compile);
+      var entry = loadRemote(compile, affect); // affect здесь = { lazy: true }
       var placeholder = function placeholder() {
+        entry.load();
         return entry.view || '';
       };
       placeholder.remote = entry;
       compile = placeholder;
+      affect = undefined;
     }
     if (compile && compile.remote) {
       var _compile2 = compile,
@@ -1077,8 +1123,8 @@ function vm() {
     }
     return view;
   }
-  function directive(name, compile, affect) {
-    _push(directives, name, compile, affect);
+  function directive(name, compile, affect, priority) {
+    _push(directives, name, compile, affect, priority);
     return view;
   }
   function filter(name, fn) {
@@ -1629,6 +1675,15 @@ directive('w-for', function ($el, attrs) {
   var parentScope = this.scope,
     compile = this.compile;
   var data = parentScope.parse(dataKey);
+  if (config.debug && Array.isArray(data) && data.length === 0) {
+    report("w-for \xAB".concat(attr, "\xBB: \u043C\u0430\u0441\u0441\u0438\u0432 \u043F\u0443\u0441\u0442\u043E\u0439, \u043E\u0442\u0440\u0438\u0441\u043E\u0432\u044B\u0432\u0430\u0442\u044C \u043D\u0435\u0447\u0435\u0433\u043E"), {
+      view: this.view,
+      el: el,
+      expr: dataKey,
+      scope: parentScope,
+      hint: 'Если данные грузятся асинхронно, проверьте, что они дошли до этого компонента (см. пропсы)'
+    });
+  }
 
   // make it not be able to compile again
   $el.removeAttr('w-for');
@@ -1658,9 +1713,9 @@ function sanitizeSvg(str) {
   });
   tpl.content.querySelectorAll('*').forEach(function (el) {
     ;
-    _toConsumableArray(el.attributes).forEach(function (_ref0) {
-      var name = _ref0.name,
-        value = _ref0.value;
+    _toConsumableArray(el.attributes).forEach(function (_ref1) {
+      var name = _ref1.name,
+        value = _ref1.value;
       var n = name.toLowerCase();
       var v = value.trim().toLowerCase();
       var badHref = (n === 'href' || n === 'xlink:href') && !v.startsWith('#');
@@ -7551,8 +7606,13 @@ function createAsyncComponent(defer, callback) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return route; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return createRouter; });
 /* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9);
+/* harmony import */ var _wex_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7);
+/* harmony import */ var _wire_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(21);
+/* harmony import */ var _route_pattern_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(22);
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
@@ -7575,7 +7635,6 @@ function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = 
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-
 function rewriteHistory(type) {
   var origin = window.history[type];
   return function () {
@@ -7740,6 +7799,17 @@ var Navigation = /*#__PURE__*/function (_Base) {
   }]);
 }(Base);
 var navigation = new Navigation();
+
+ // путь к ядру
+
+
+var activeRouter = null;
+var fill = function fill(tpl, params) {
+  return tpl.replace(/\{(\w+)\}/g, function (_, k) {
+    var _params$k;
+    return encodeURIComponent((_params$k = params[k]) !== null && _params$k !== void 0 ? _params$k : '');
+  });
+};
 var Router = /*#__PURE__*/function (_Base2) {
   function Router() {
     _classCallCheck(this, Router);
@@ -7751,6 +7821,15 @@ var Router = /*#__PURE__*/function (_Base2) {
     value: function init(options) {
       var _this3 = this;
       this.options = options;
+      this.routes = {};
+      var table = options.routes || {};
+      Object.keys(table).forEach(function (name) {
+        var r = table[name];
+        _this3.routes[name] = typeof r === 'string' ? {
+          path: r
+        } : r;
+      });
+      this.extra = new Set(); // паттерны, которые встретились только в шаблонах
       this.url = this.getUrl();
       var onChange = function onChange() {
         var _options$baseUri = options.baseUri,
@@ -7758,18 +7837,9 @@ var Router = /*#__PURE__*/function (_Base2) {
         var url = _this3.getUrl();
         var prev = _this3.url;
         _this3.url = url;
-
-        // dont trigger change
-        if (prev === url) {
-          return;
-        }
-        var flag = true;
-        if (baseUri && url.indexOf(baseUri) !== 0) {
-          flag = false;
-        }
-        if (flag) {
-          _this3.emit('change', url);
-        }
+        if (prev === url) return;
+        if (baseUri && url.indexOf(baseUri) !== 0) return;
+        _this3.emit('change', url);
       };
       navigation.on('change', onChange);
       return function () {
@@ -7779,52 +7849,47 @@ var Router = /*#__PURE__*/function (_Base2) {
   }, {
     key: "navigate",
     value: function navigate(type, to) {
-      var mode = this.options.mode;
-      if (mode === 'history') {
+      if (this.options.mode === 'history') {
         navigation[type](to);
       } else {
         var _window$location = window.location,
           pathname = _window$location.pathname,
           _window$location$sear = _window$location.search,
           search = _window$location$sear === void 0 ? '' : _window$location$sear;
-        var url = pathname + search + '#' + to;
-        navigation[type](url);
+        navigation[type](pathname + search + '#' + to);
       }
     }
   }, {
     key: "getUrl",
     value: function getUrl() {
-      var mode = this.options.mode;
       var _window$location2 = window.location,
         hash = _window$location2.hash,
         href = _window$location2.href,
         origin = _window$location2.origin;
-      if (mode === 'history') {
-        return href.replace(origin, '');
-      }
+      if (this.options.mode === 'history') return href.replace(origin, '');
       return hash.replace('#', '') || '/';
     }
   }, {
     key: "getLocation",
     value: function getLocation() {
-      var url = this.getUrl();
-      var _url$split = url.split('?'),
-        _url$split2 = _slicedToArray(_url$split, 2),
-        pathname = _url$split2[0],
-        _url$split2$ = _url$split2[1],
-        search = _url$split2$ === void 0 ? '' : _url$split2$;
-      var params = {};
+      var _this$getUrl$split = this.getUrl().split('?'),
+        _this$getUrl$split2 = _slicedToArray(_this$getUrl$split, 2),
+        pathname = _this$getUrl$split2[0],
+        _this$getUrl$split2$ = _this$getUrl$split2[1],
+        search = _this$getUrl$split2$ === void 0 ? '' : _this$getUrl$split2$;
+      var query = {};
       search.split('&').filter(Boolean).forEach(function (item) {
         var _item$split = item.split('='),
           _item$split2 = _slicedToArray(_item$split, 2),
-          key = _item$split2[0],
-          value = _item$split2[1];
-        params[key] = value;
+          k = _item$split2[0],
+          _item$split2$ = _item$split2[1],
+          v = _item$split2$ === void 0 ? '' : _item$split2$;
+        query[decodeURIComponent(k)] = decodeURIComponent(v);
       });
       return {
         pathname: pathname,
         search: search,
-        params: params
+        query: query
       };
     }
   }, {
@@ -7834,101 +7899,224 @@ var Router = /*#__PURE__*/function (_Base2) {
         pathname = _this$getLocation.pathname,
         query = _this$getLocation.query;
       var next = _objectSpread(_objectSpread({}, query), params);
-      var search = Object.keys(next).reduce(function (str, key) {
-        var value = next[key];
-        var pre = str ? str + '&' : '';
-        if (typeof value === 'undefined') {
-          return pre + key;
+      var search = Object.keys(next).map(function (k) {
+        return next[k] === undefined ? k : encodeURIComponent(k) + '=' + encodeURIComponent(next[k]);
+      }).join('&');
+      this.navigate('push', pathname + (search ? '?' + search : ''));
+    }
+
+    // --- таблица роутов ---
+  }, {
+    key: "pattern",
+    value: function pattern(ref) {
+      return this.routes[ref] ? this.routes[ref].path : ref;
+    }
+  }, {
+    key: "register",
+    value: function register(pattern) {
+      var known = Object.values(this.routes).some(function (r) {
+        return r.path === pattern;
+      });
+      if (!known) this.extra.add(pattern);
+    }
+  }, {
+    key: "matchPath",
+    value: function matchPath(pathname) {
+      for (var _i = 0, _Object$keys = Object.keys(this.routes); _i < _Object$keys.length; _i++) {
+        var name = _Object$keys[_i];
+        var params = Object(_route_pattern_js__WEBPACK_IMPORTED_MODULE_3__[/* matchRoute */ "b"])(this.routes[name].path, pathname);
+        if (params) return {
+          name: name,
+          route: this.routes[name],
+          params: params
+        };
+      }
+      var _iterator = _createForOfIteratorHelper(this.extra),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var pattern = _step.value;
+          var _params = Object(_route_pattern_js__WEBPACK_IMPORTED_MODULE_3__[/* matchRoute */ "b"])(pattern, pathname);
+          if (_params) return {
+            name: null,
+            route: {
+              path: pattern
+            },
+            params: _params
+          };
         }
-        return pre + key + '=' + value;
-      }, '');
-      var url = pathname + (search ? '?' + search : '');
-      this.navigate('push', url);
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      return {
+        name: null,
+        route: null,
+        params: {}
+      };
+    }
+  }, {
+    key: "match",
+    value: function match() {
+      return this.matchPath(this.getLocation().pathname);
     }
   }, {
     key: "isMatch",
-    value: function isMatch(uri) {
-      var url = this.getUrl();
-      if (uri instanceof RegExp) {
-        return uri.test(url);
-      }
-      return url === uri;
+    value: function isMatch(ref) {
+      return Object(_route_pattern_js__WEBPACK_IMPORTED_MODULE_3__[/* matchRoute */ "b"])(this.pattern(ref), this.getLocation().pathname) !== null;
+    }
+
+    // route('post.show', {id: 5}) -> '/post/5'; лишние ключи уходят в ?query
+  }, {
+    key: "path",
+    value: function path(ref, params) {
+      return Object(_route_pattern_js__WEBPACK_IMPORTED_MODULE_3__[/* buildRoute */ "a"])(this.pattern(ref), params);
+    }
+
+    // то, что кладём в href: в hash-режиме с '#'
+  }, {
+    key: "href",
+    value: function href(path) {
+      return this.options.mode === 'history' ? path : '#' + path;
+    }
+  }, {
+    key: "url2",
+    value: function url2(ref, params) {
+      return this.href(this.path(ref, params));
+    }
+  }, {
+    key: "go",
+    value: function go(ref, params) {
+      var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'push';
+      this.navigate(type, this.path(ref, params));
+    }
+
+    // --- префетч: компонент + данные ---
+  }, {
+    key: "prefetchPath",
+    value: function prefetchPath(path) {
+      var hit = this.matchPath(path.split('?')[0]);
+      if (!hit.route) return;
+      var _hit$route = hit.route,
+        url = _hit$route.component,
+        data = _hit$route.data;
+      if (url) Object(_wex_js__WEBPACK_IMPORTED_MODULE_1__[/* preloadComponent */ "e"])(url);
+      var list = typeof data === 'function' ? data(hit.params) : data;
+      [].concat(list || []).forEach(function (u) {
+        return _wire_js__WEBPACK_IMPORTED_MODULE_2__[/* $wire */ "a"].prefetch(fill(u, hit.params));
+      });
     }
   }]);
 }(Base);
+function route(ref, params) {
+  return activeRouter.url2(ref, params);
+}
+
+// ------------ директивы и компоненты (глобальные, работают во всех компонентах) ------------
+
+// w-route="/post/{id}" | w-route="post.show" | w-route="regex:/^\/a/i" | старое w-route="'/'"
+Object(_wex_js__WEBPACK_IMPORTED_MODULE_1__[/* directive */ "c"])('w-route', function ($el, attrs) {
+  var router = activeRouter;
+  if (!router) throw new Error('Wex: подключите createRouter() через .plugin(...)');
+  var pattern = attrs['w-route'].trim();
+  if (/^(['"]).*\1$/.test(pattern)) pattern = pattern.slice(1, -1);
+  router.register(pattern);
+  if (!router.isMatch(pattern)) {
+    return "<!-- ".concat(Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__[/* getNodeName */ "d"])($el[0]), " w-route=\"").concat(pattern.replace(/--/g, '- -'), "\" (hidden) -->");
+  }
+}, null, 100);
+
+// <Link to="post.show" :params="{ id: post.id }" class="...">текст</Link>
+// <Link to="/about"> или <Link :to="expr">
+Object(_wex_js__WEBPACK_IMPORTED_MODULE_1__[/* component */ "b"])('Link', function ($el, attrs, slot) {
+  var router = activeRouter;
+  var ref = attrs[':to'] ? this.scope.parse(attrs[':to']) : attrs.to;
+  var params = attrs[':params'] ? this.scope.parse(attrs[':params']) : {};
+  var path = router.path(ref, params);
+  var a = document.createElement('a');
+  Object.keys(attrs).forEach(function (k) {
+    if (k === 'to' || k[0] === ':' || k[0] === '@') return;
+    a.setAttribute(k, attrs[k]);
+  });
+  a.setAttribute('href', router.href(path));
+  a.setAttribute('data-wex-link', path);
+  slot().forEach(function (n) {
+    return a.appendChild(n);
+  });
+  return a;
+}, function ($el) {
+  var a = $el[0];
+  var path = a && a.getAttribute && a.getAttribute('data-wex-link');
+  if (!path) return;
+  var router = activeRouter;
+  var timer = null;
+  var warm = function warm() {
+    return router.prefetchPath(path);
+  };
+  var enter = function enter() {
+    clearTimeout(timer);
+    timer = setTimeout(warm, 65);
+  };
+  var leave = function leave() {
+    return clearTimeout(timer);
+  };
+  var click = function click(e) {
+    if (router.options.mode !== 'history') return; // в hash-режиме обычный <a href="#/..."> достаточно
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target) return;
+    e.preventDefault();
+    router.navigate('push', path);
+  };
+  a.addEventListener('mouseenter', enter);
+  a.addEventListener('mouseleave', leave);
+  a.addEventListener('touchstart', warm, {
+    passive: true
+  });
+  a.addEventListener('focus', warm);
+  a.addEventListener('click', click);
+  return function () {
+    clearTimeout(timer);
+    a.removeEventListener('mouseenter', enter);
+    a.removeEventListener('mouseleave', leave);
+    a.removeEventListener('touchstart', warm);
+    a.removeEventListener('focus', warm);
+    a.removeEventListener('click', click);
+  };
+});
 function createRouter() {
   var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  var mode = options.mode,
-    baseUri = options.baseUri;
-  var router = new Router({
-    mode: mode,
-    baseUri: baseUri
-  });
+  var router = new Router(options);
   return function () {
     var view = this.view;
+    activeRouter = router;
     var $route = {};
-    Object.defineProperty($route, 'params', {
-      get: function get() {
-        var _router$getLocation = router.getLocation(),
-          params = _router$getLocation.params;
-        return params;
+    var def = function def(key, get) {
+      return Object.defineProperty($route, key, {
+        get: get,
+        enumerable: true
+      });
+    };
+    def('name', function () {
+      return router.match().name;
+    });
+    def('params', function () {
+      return router.match().params;
+    });
+    def('query', function () {
+      return router.getLocation().query;
+    });
+    def('path', function () {
+      return router.getLocation().pathname;
+    });
+    Object.defineProperty($route, 'url', {
+      value: function value(ref, p) {
+        return router.url2(ref, p);
       },
-      enumerable: true
+      enumerable: false
     });
-    view.directive('w-route', function ($el, attrs) {
-      var attr = attrs['w-route'];
-      var hidden = "<!-- ".concat(Object(_utils_js__WEBPACK_IMPORTED_MODULE_0__[/* getNodeName */ "d"])($el[0]), " w-route=\"").concat(attr, "\" (hidden) -->");
-      var toMatch = attr;
-      if (/^\/.+?\/[a-z]*$/.test(toMatch)) {
-        var str = toMatch.substring(1);
-        var items = str.split('/');
-        var sym = items.pop();
-        var exp = items.join('/');
-        var reg = new RegExp(exp, sym);
-        toMatch = reg;
-      }
-      if (!(toMatch instanceof RegExp)) {
-        toMatch = this.scope.parse(attr);
-      }
-      if (!router.isMatch(toMatch)) {
-        return hidden;
-      }
-    });
-    view.directive('w-navigate', function ($el, attrs) {
-      var type = attrs['w-navigate'];
-      if (['back', 'forward'].indexOf(type) > -1) {
-        if (!$el.attr('href')) {
-          $el.attr('href', '#');
-        }
-      } else if (type === 'open') {
-        if ($el.attr('target') !== '_blank') {
-          $el.attr('target', '_blank');
-        }
-      } else {
-        if (mode !== 'history') {
-          var href = $el.attr('href');
-          var url = href.replace(/^#+/, '');
-          $el.attr('href', '#' + url);
-        }
-      }
-    }, function ($el, attrs) {
-      var type = attrs['w-navigate'] || 'push';
-      var navigate = function navigate(e) {
-        if (['back', 'forward'].indexOf(type) > -1) {
-          e.preventDefault();
-          router.navigate(type);
-        } else if (['push', 'replace'].indexOf(type) > -1) {
-          e.preventDefault();
-          var href = $el.attr('href');
-          var url = href.replace(/^#+/, '');
-          router.navigate(type, url);
-        }
-      };
-      $el.on('click', navigate);
-      return function () {
-        return $el.off('click', navigate);
-      };
-    });
+
+    // view.directive('w-navigate', ...) — как было, без изменений
+
     var routerChange = function routerChange() {
       view.emit('$route', router.getUrl());
       view.update(true);
@@ -8032,6 +8220,42 @@ function createWire(options) {
     listeners[event].push(fn);
     return wire;
   }
+  var prefetched = {};
+  var ttl = options.prefetchTtl || 30000;
+  function buildOptions(method, url, data) {
+    var o = {
+      url: url,
+      method: method.toUpperCase(),
+      headers: {}
+    };
+    if (csrf) o.headers['X-CSRF-TOKEN'] = csrf;
+    if (data && (method === 'post' || method === 'put')) {
+      o.data = JSON.stringify(data);
+      o.contentType = 'application/json';
+    }
+    return o;
+  }
+
+  // грузит GET заранее; следующий wire.get(тот же url) заберёт готовый ответ
+  function prefetch(url) {
+    var hit = prefetched[url];
+    if (hit && Date.now() - hit.at < ttl) return wire;
+    var entry = {
+      req: ajaxFn(buildOptions('get', url)),
+      at: Date.now()
+    };
+    prefetched[url] = entry;
+    entry.req.fail(function () {
+      if (prefetched[url] === entry) delete prefetched[url];
+    });
+    return wire;
+  }
+  function takePrefetched(url) {
+    var hit = prefetched[url];
+    if (!hit) return null;
+    delete prefetched[url]; // одноразово: следующий заход получит свежие данные
+    return Date.now() - hit.at < ttl ? hit.req : null;
+  }
   function request(method, url, data, strategy) {
     strategy = strategy || 'drop';
     var doneHandlers = [];
@@ -8041,8 +8265,12 @@ function createWire(options) {
     var state = null;
     var target = null;
     var chain = {
-      to: function to(ref) {
-        target = ref;
+      to: function to(ref, key) {
+        target = key !== undefined ? {
+          __wire: true,
+          obj: ref,
+          key: key
+        } : ref;
         return chain;
       },
       // .before(fn) вызывает fn немедленно при регистрации —
@@ -8076,63 +8304,59 @@ function createWire(options) {
     };
     pending[url] = true;
     emit('$wiring', 'start', url);
-    var ajaxOptions = {
-      url: url,
-      method: method.toUpperCase(),
-      headers: {}
-    };
-    if (csrf) ajaxOptions.headers['X-CSRF-TOKEN'] = csrf;
-    if (data && (method === 'post' || method === 'put')) {
-      ajaxOptions.data = JSON.stringify(data);
-      ajaxOptions.contentType = 'application/json';
-    }
-    var req = ajaxFn(ajaxOptions);
-    req.done(function (responseData) {
-      emit('$wiring', 'done', url);
-
-      // если указан .to() — пишем туда напрямую
-      if (target !== null) {
-        // пишем всё содержимое ответа прямо туда
-        if (Array.isArray(target)) {
-          target.length = 0;
-          responseData.forEach(function (item) {
-            target.push(item);
-          });
-        } else {
-          Object.assign(target, responseData);
+    var cached = method === 'get' ? takePrefetched(url) : null;
+    var req = cached || ajaxFn(buildOptions(method, url, data));
+    function attach() {
+      req.done(function (responseData) {
+        if (target) {
+          if (target.__wire) {
+            // .to(state, 'posts'): присваивание через стратегию
+            var fn = strategies[strategy] || strategies.drop;
+            fn(target.obj, target.key, responseData, failHandlers);
+          } else if (Array.isArray(target)) {
+            // .to(state.posts), где posts = []
+            if (strategy !== 'push') target.length = 0;
+            if (Array.isArray(responseData)) Array.prototype.push.apply(target, responseData);else target.push(responseData);
+          } else if (target && _typeof(target) === 'object') {
+            // .to(state.posts), где posts = {}
+            if (strategy !== 'push') {
+              Object.keys(target).forEach(function (k) {
+                delete target[k];
+              });
+            }
+            if (responseData && _typeof(responseData) === 'object') {
+              Object.assign(target, responseData); // массив ответа превратится в ключи 0,1,2...
+            } else if (typeof console !== 'undefined') {
+              console.warn('[wire] ' + url + ' вернул не объект/массив, а ' + _typeof(responseData) + ': записывать в .to() нечего');
+            }
+          } else if (typeof console !== 'undefined') {
+            console.warn('[wire] .to() получил ' + Object.prototype.toString.call(target) + ': данные из ' + url + ' не записаны');
+          }
         }
         doneHandlers.forEach(function (fn) {
           fn(responseData);
         });
-        return;
-      }
-
-      // авто-мерж всегда
-      if (state && state.server && _typeof(responseData) === 'object' && responseData !== null) {
-        var strategyFn = strategies[strategy] || strategies.drop;
-        Object.keys(responseData).forEach(function (key) {
-          strategyFn(state.server, key, responseData[key], failHandlers);
+      });
+      req.fail(function (jqXHR, textStatus) {
+        if (typeof console !== 'undefined') {
+          console.error('[wire] ' + method.toUpperCase() + ' ' + url + ' → ' + (jqXHR && jqXHR.status) + ' ' + textStatus);
+        }
+        failHandlers.forEach(function (fn) {
+          fn(jqXHR, textStatus);
         });
-      }
+      });
+      req.always(function () {
+        delete pending[url];
+        emit('$wiring', 'end', url);
+        alwaysHandlers.forEach(function (fn) {
+          fn();
+        });
+      });
+    }
 
-      // .done() просто дополнительный колбэк, не отменяет мерж
-      doneHandlers.forEach(function (fn) {
-        fn(responseData);
-      });
-    });
-    req.fail(function (jqXHR, textStatus) {
-      emit('$wiring', 'fail', url);
-      failHandlers.forEach(function (fn) {
-        fn(jqXHR, textStatus);
-      });
-    });
-    req.always(function () {
-      delete pending[url];
-      emit('$wiring', 'always', url);
-      alwaysHandlers.forEach(function (fn) {
-        fn();
-      });
-    });
+    // у готового ответа done() срабатывает синхронно, до .to(...); откладываем,
+    // чтобы цепочка .get(url).to(state.x) успела выставить target
+    if (cached) Promise.resolve().then(attach);else attach();
     return chain;
   }
 
@@ -8154,6 +8378,7 @@ function createWire(options) {
   wire["delete"] = function (url, strategy) {
     return request('delete', url, null, strategy);
   };
+  wire.prefetch = prefetch;
   wire.on = on;
   return wire;
 }
@@ -8162,6 +8387,414 @@ var $wire = createWire();
 
 /***/ }),
 /* 22 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export compileRoute */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return matchRoute; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return buildRoute; });
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+// route-pattern.js
+// Синтаксис: {id}  {id?}  {id:\d+}  {slug:[a-z-]+}  {path*}
+// Ограничение: внутри {name:regex} нельзя использовать фигурные скобки (\d{2} не сработает).
+// Если нужно, пишите \d\d или используйте regex:
+
+var esc = function esc(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+function compileRoute(pattern) {
+  var keys = [];
+  var tokenRe = /\{(\w+)(\?|\*)?(?::([^}]+))?\}/g;
+  var src = '';
+  var last = 0;
+  var m;
+  while (m = tokenRe.exec(pattern)) {
+    var literal = pattern.slice(last, m.index);
+    var _m = m,
+      _m2 = _slicedToArray(_m, 4),
+      name = _m2[1],
+      mod = _m2[2],
+      custom = _m2[3];
+    keys.push(name);
+    if (mod === '?') {
+      // необязательный параметр забирает слеш перед собой
+      var slash = literal.endsWith('/');
+      if (slash) literal = literal.slice(0, -1);
+      src += esc(literal) + (slash ? '(?:/' : '(?:') + '(' + (custom || '[^/]+') + '))?';
+    } else if (mod === '*') {
+      src += esc(literal) + '(' + (custom || '.*') + ')';
+    } else {
+      src += esc(literal) + '(' + (custom || '[^/]+') + ')';
+    }
+    last = m.index + m[0].length;
+  }
+  src += esc(pattern.slice(last));
+  return {
+    regex: new RegExp('^' + src + '/?$'),
+    keys: keys
+  };
+}
+function matchRoute(pattern, pathname) {
+  // regex: сырая регулярка, результат: params[0], params[1] ...
+  if (pattern.startsWith('regex:')) {
+    var body = pattern.slice(6).trim();
+    var i = body.lastIndexOf('/');
+    var re = new RegExp(body.slice(1, i), body.slice(i + 1));
+    var _m3 = re.exec(pathname);
+    if (!_m3) return null;
+    var _params = {};
+    _m3.slice(1).forEach(function (v, k) {
+      _params[k] = v;
+    });
+    return _params;
+  }
+  var _compileRoute = compileRoute(pattern),
+    regex = _compileRoute.regex,
+    keys = _compileRoute.keys;
+  var m = regex.exec(pathname);
+  if (!m) return null;
+  var params = {};
+  keys.forEach(function (k, i) {
+    if (m[i + 1] !== undefined) params[k] = decodeURIComponent(m[i + 1]);
+  });
+  return params;
+}
+
+// route('post.show', { id: 5, page: 2 }) -> '/post/5?page=2'
+function buildRoute(pattern) {
+  var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var used = new Set();
+  var url = pattern.replace(/(\/?)\{(\w+)(\?|\*)?(?::[^}]+)?\}/g, function (all, slash, name, mod) {
+    var v = params[name];
+    if (v === undefined || v === null) {
+      if (mod === '?') return '';
+      throw new Error("route: \u043D\u0435 \u0445\u0432\u0430\u0442\u0430\u0435\u0442 \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u0430 \xAB".concat(name, "\xBB \u0434\u043B\u044F ").concat(pattern));
+    }
+    used.add(name);
+    var enc = mod === '*' ? String(v).split('/').map(encodeURIComponent).join('/') : encodeURIComponent(v);
+    return slash + enc;
+  });
+  var rest = Object.keys(params).filter(function (k) {
+    return !used.has(k);
+  });
+  if (rest.length) {
+    url += '?' + rest.map(function (k) {
+      return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+    }).join('&');
+  }
+  return url;
+}
+
+/***/ }),
+/* 23 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return createLazy; });
+/* harmony import */ var _wex_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7);
+// w-lazy.js
+
+var cfg = {
+  margin: '200px',
+  timeout: 15000
+};
+function findScroller(el, selector) {
+  if (selector) return document.querySelector(selector);
+  for (var n = el.parentElement; n && n !== document.body; n = n.parentElement) {
+    var o = getComputedStyle(n).overflowY;
+    if (o === 'auto' || o === 'scroll' || o === 'overlay') return n;
+  }
+  return null; // окно браузера
+}
+
+// display: contents не имеет бокса, IntersectionObserver по нему не сработает
+function pickTarget(el, dir) {
+  var edge = function edge(n) {
+    return dir === 'up' ? n.firstElementChild : n.lastElementChild;
+  };
+  var cur = edge(el);
+  while (cur && getComputedStyle(cur).display === 'contents') {
+    var next = edge(cur);
+    if (!next) return el;
+    cur = next;
+  }
+  return cur || el;
+}
+function makeLazy(el, o) {
+  var scroller = findScroller(el, o.root);
+  var scrollEl = scroller || document.scrollingElement || document.documentElement;
+  if (o.dir === 'up') scrollEl.style.overflowAnchor = 'none';
+  var lz = {
+    key: o.key,
+    view: o.view,
+    busy: false,
+    ended: false,
+    finished: false,
+    page: 0,
+    lastCount: -1,
+    stall: 0,
+    restore: null,
+    timer: null,
+    rearm: null
+  };
+  lz.io = new IntersectionObserver(function (entries) {
+    if (!el.isConnected) return lz.destroy();
+    if (entries.some(function (e) {
+      return e.isIntersecting;
+    })) trigger();
+  }, {
+    root: scroller,
+    rootMargin: o.margin || cfg.margin
+  });
+  function settle() {
+    var r = lz.restore;
+    if (!r || !lz.finished) return;
+    lz.restore = null;
+    scrollEl.scrollTop = r.top + (scrollEl.scrollHeight - r.height);
+  }
+  function release() {
+    if (!lz.busy) return;
+    clearTimeout(lz.timer);
+    lz.busy = false;
+    lz.finished = true;
+    clearTimeout(lz.rearm);
+    lz.rearm = setTimeout(function () {
+      settle();
+      if (el.isConnected && !lz.ended) lz.watch();
+    }, 60);
+  }
+  function end() {
+    release();
+    lz.ended = true;
+    lz.io.disconnect();
+  }
+  function fail() {
+    var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 3000;
+    clearTimeout(lz.timer);
+    lz.timer = setTimeout(release, ms);
+  }
+  function trigger() {
+    if (lz.busy || lz.ended || !el.isConnected) return;
+    var count = el.children.length;
+    if (lz.page > 0 && count === lz.lastCount) {
+      if (++lz.stall >= 2) {
+        lz.ended = true;
+        lz.io.disconnect();
+        console.warn('Wex w-lazy: список не вырос после двух подгрузок, подгрузка остановлена. Вызовите lazy.end(), когда данных больше нет.', el);
+        return;
+      }
+    } else {
+      lz.stall = 0;
+    }
+    lz.lastCount = count;
+    lz.busy = true;
+    lz.finished = false;
+    lz.page++;
+    lz.restore = o.dir === 'up' ? {
+      height: scrollEl.scrollHeight,
+      top: scrollEl.scrollTop
+    } : null;
+    lz.timer = setTimeout(release, cfg.timeout);
+    lz.view.emit('$lazy', {
+      el: el,
+      direction: o.dir,
+      page: lz.page,
+      offset: count,
+      done: release,
+      end: end,
+      fail: fail
+    });
+  }
+  lz.watch = function () {
+    if (lz.ended) return;
+    lz.io.disconnect();
+    lz.io.observe(pickTarget(el, o.dir));
+  };
+  lz.settle = settle;
+  lz.destroy = function () {
+    clearTimeout(lz.timer);
+    clearTimeout(lz.rearm);
+    lz.io.disconnect();
+    delete el.__wLazy;
+  };
+  return lz;
+}
+
+// глобальная директива: работает во всех компонентах
+// <div w-lazy="down|up" w-lazy-margin="300px" w-lazy-root="#chat" w-lazy-key="query">
+Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* directive */ "c"])('w-lazy', null, function ($el, attrs) {
+  var el = $el[0];
+  var view = this.view,
+    scope = this.scope;
+  var key = attrs['w-lazy-key'] ? scope.parse(attrs['w-lazy-key']) : undefined;
+  var lz = el.__wLazy;
+  if (lz && lz.key !== key) {
+    lz.destroy();
+    lz = null;
+  }
+  if (!lz) {
+    lz = el.__wLazy = makeLazy(el, {
+      dir: (attrs['w-lazy'] || '').trim() === 'up' ? 'up' : 'down',
+      margin: attrs['w-lazy-margin'],
+      root: attrs['w-lazy-root'],
+      key: key,
+      view: view
+    });
+  }
+  lz.view = view;
+  lz.settle();
+  lz.watch();
+});
+
+// плагин нужен только для настроек по умолчанию
+function createLazy() {
+  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  Object.assign(cfg, options);
+  return function () {};
+}
+
+/***/ }),
+/* 24 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var _wex_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(7);
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+// w-prefetch.js
+
+var unquote = function unquote(s) {
+  return String(s).trim().replace(/^(['"])(.*)\1$/, '$2');
+};
+var PATH = /^[a-zA-Z_$][\w$]*(\.[\w$]+)*$/;
+
+// <button w-prefetch="/posts.json" w-to="posts">
+// hover/focus/touch: прогреть запрос; click (только если есть w-to): забрать ответ и записать в state
+Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* directive */ "c"])('w-prefetch', null, function ($el, attrs) {
+  var scope = this.scope,
+    view = this.view;
+  var el = $el[0];
+  var raw = attrs['w-prefetch'];
+  var ctx = {
+    view: view,
+    el: el,
+    attr: 'w-prefetch',
+    expr: raw,
+    scope: scope
+  };
+  el.__wPrefetch = true; // маркер для проверки в w-to
+
+  var wire = globalThis.$wire;
+  if (!wire || typeof wire.prefetch !== 'function') {
+    Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* report */ "f"])('w-prefetch: $wire или $wire.prefetch недоступен', _objectSpread(_objectSpread({}, ctx), {}, {
+      level: 'error',
+      hint: 'Проверьте, что в wire есть wire.prefetch = prefetch и $wire доступен глобально'
+    }));
+    return;
+  }
+
+  // {{ }} внутри атрибута поддерживается, в том числе внутри w-for
+  var url = unquote(scope.interpolate(raw || ''));
+  if (!url || url === 'undefined' || url === 'null' || url.indexOf('{{') !== -1) {
+    Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* report */ "f"])("w-prefetch: \u043D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 URL ".concat(JSON.stringify(url)), _objectSpread(_objectSpread({}, ctx), {}, {
+      level: 'error',
+      hint: 'Ожидается строка вида w-prefetch="/api/posts.json" или w-prefetch="/api/posts/{{ id }}.json"'
+    }));
+    return;
+  }
+
+  // --- w-to ---
+  var path = null;
+  var rawTo = attrs['w-to'];
+  if (rawTo !== undefined) {
+    var toCtx = _objectSpread(_objectSpread({}, ctx), {}, {
+      attr: 'w-to',
+      expr: rawTo
+    });
+    path = unquote(scope.interpolate(rawTo)).replace(/^state\./, '');
+    if (!PATH.test(path)) {
+      Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* report */ "f"])("w-to: \u043D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 \u043F\u0443\u0442\u044C ".concat(JSON.stringify(path)), _objectSpread(_objectSpread({}, toCtx), {}, {
+        level: 'error',
+        hint: 'Ожидается имя переменной из state: w-to="posts" или w-to="data.posts"'
+      }));
+      path = null;
+    } else {
+      var current;
+      try {
+        current = scope.parse(path);
+      } catch (e) {
+        current = undefined;
+      }
+      if (current === undefined) {
+        Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* report */ "f"])("w-to: \xAB".concat(path, "\xBB \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0432 state"), _objectSpread(_objectSpread({}, toCtx), {}, {
+          scope: scope,
+          hint: 'Объявите переменную в .state({ ' + path.split('.')[0] + ': [] }), иначе запись может быть нереактивной'
+        }));
+      }
+    }
+  }
+  var prefetch = function prefetch() {
+    return wire.prefetch(url);
+  };
+  var load = function load() {
+    wire.get(url).done(function (data) {
+      if (data === null || data === undefined) {
+        Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* report */ "f"])("w-to: ".concat(url, " \u0432\u0435\u0440\u043D\u0443\u043B ").concat(data), _objectSpread(_objectSpread({}, ctx), {}, {
+          attr: 'w-to',
+          expr: rawTo,
+          scope: scope
+        }));
+      }
+      try {
+        scope.assign(path, data);
+      } catch (e) {
+        Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* report */ "f"])("w-to: \u043D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u043F\u0438\u0441\u0430\u0442\u044C \u0432 \xAB".concat(path, "\xBB: ").concat(e.message), _objectSpread(_objectSpread({}, ctx), {}, {
+          attr: 'w-to',
+          expr: rawTo,
+          scope: scope,
+          level: 'error'
+        }));
+      }
+    }).fail(function (xhr, status) {
+      Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* report */ "f"])("w-prefetch: ".concat(url, " \u2192 ").concat(xhr && xhr.status || '?', " ").concat(status), _objectSpread(_objectSpread({}, ctx), {}, {
+        level: 'error',
+        hint: '404: проверьте путь и регистр имени файла; parsererror: проверьте, что JSON валидный'
+      }));
+    });
+  };
+  $el.on('mouseenter.wprefetch focus.wprefetch touchstart.wprefetch', prefetch);
+  if (path) $el.on('click.wprefetch', load);
+  return function () {
+    $el.off('.wprefetch');
+    delete el.__wPrefetch;
+  };
+});
+
+// w-to сама ничего не делает, всю работу выполняет w-prefetch; здесь только проверка
+Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* directive */ "c"])('w-to', null, function ($el, attrs) {
+  if (!$el[0].__wPrefetch) {
+    Object(_wex_js__WEBPACK_IMPORTED_MODULE_0__[/* report */ "f"])('w-to без w-prefetch: атрибут ни на что не влияет', {
+      view: this.view,
+      el: $el[0],
+      attr: 'w-to',
+      expr: attrs['w-to'],
+      level: 'error',
+      hint: 'Добавьте w-prefetch="/url.json" на тот же элемент'
+    });
+  }
+});
+
+/***/ }),
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

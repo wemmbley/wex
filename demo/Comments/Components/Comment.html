@@ -1,15 +1,48 @@
 <template>
-    <div w-for="comment in comments">
-        <div class="flex mb-5">
-            <img class="w-14 h-14 rounded-full object-cover"
-                 src="{{ comment.avatar }}" alt="Test">
-            <div class="ml-3">
-                <p class="font-bold">{{ comment.name }}</p>
-                <p class="font-light">{{ comment.text }}</p>
+    <div class="space-y-4">
+        <div w-for="comment in comments" class="group relative">
+            <!-- Карточка комментария -->
+            <div class="flex items-start gap-3.5 rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-300">
+                <!-- Аватар с тонкой рамкой -->
+                <img class="h-9 w-9 shrink-0 rounded-full border border-zinc-200 bg-zinc-100 object-cover" w-src="comment.avatar" alt="Avatar">
+                <div class="min-w-0 flex-1">
+                    <!-- Шапка: Имя + дата/мета (если есть) -->
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold tracking-tight text-zinc-950">
+                                {{ comment.name }}
+                            </span>
+                            <!-- Опциональный бейдж или дата, если передаются в объекте -->
+                            <span w-if="comment.date" class="text-xs text-zinc-400 font-light">
+                                {{ comment.date }}
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Текст комментария -->
+                    <p class="mt-1.5 text-sm leading-relaxed text-zinc-700 break-words">
+                        {{ comment.text }}
+                    </p>
+                    <!-- Действия -->
+                    <div class="-ml-2 mt-1.5 flex items-center gap-0.5">
+                        <button type="button" class="cursor-pointer inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+                            Ответить
+                        </button>
+                        <button type="button" class="cursor-pointer inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                            <span w-if="comment.likes">{{ comment.likes }}</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div w-if="replies != []" class="flex col ml-10">
-            <Comment :comments="comment.replies"></Comment>
+            <!-- Вложенные ответы -->
+            <div w-if="comment.replies && comment.replies.length"
+                 class="relative mt-3 ml-4 pl-5 sm:ml-6 sm:pl-7">
+                <!-- Соединительная линия -->
+                <div class="absolute left-0 top-0 h-6 w-5 border-b border-l border-zinc-300 rounded-bl-xl"></div>
+                <Comment :comments="comment.replies"></Comment>
+            </div>
+
         </div>
     </div>
 </template>

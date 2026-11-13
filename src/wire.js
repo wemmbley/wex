@@ -69,6 +69,36 @@ function createWire(options) {
     return wire
   }
 
+  var prefetched = {}
+  var ttl = options.prefetchTtl || 30000
+
+  function buildOptions(method, url, data) {
+    var o = { url: url, method: method.toUpperCase(), headers: {} }
+    if (csrf) o.headers['X-CSRF-TOKEN'] = csrf
+    if (data && (method === 'post' || method === 'put')) {
+      o.data = JSON.stringify(data)
+      o.contentType = 'application/json'
+    }
+    return o
+  }
+
+  // грузит GET заранее; следующий wire.get(тот же url) заберёт готовый ответ
+  function prefetch(url) {
+    var hit = prefetched[url]
+    if (hit && Date.now() - hit.at < ttl) return wire
+    var entry = { req: ajaxFn(buildOptions('get', url)), at: Date.now() }
+    prefetched[url] = entry
+    entry.req.fail(function() { if (prefetched[url] === entry) delete prefetched[url] })
+    return wire
+  }
+
+  function takePrefetched(url) {
+    var hit = prefetched[url]
+    if (!hit) return null
+    delete prefetched[url]   // одноразово: следующий заход получит свежие данные
+    return Date.now() - hit.at < ttl ? hit.req : null
+  }
+
   function request(method, url, data, strategy) {
     strategy = strategy || 'drop'
 
@@ -80,8 +110,8 @@ function createWire(options) {
     var target   = null;
 
     var chain = {
-      to: function(ref) {
-        target = ref
+      to: function(ref, key) {
+        target = key !== undefined ? { __wire: true, obj: ref, key: key } : ref
         return chain
       },
 
@@ -109,53 +139,60 @@ function createWire(options) {
     pending[url] = true
     emit('$wiring', 'start', url)
 
-    var ajaxOptions = { url: url, method: method.toUpperCase(), headers: {} }
-    if (csrf) ajaxOptions.headers['X-CSRF-TOKEN'] = csrf
-    if (data && (method === 'post' || method === 'put')) {
-      ajaxOptions.data        = JSON.stringify(data)
-      ajaxOptions.contentType = 'application/json'
-    }
+    var cached = method === 'get' ? takePrefetched(url) : null
+    var req = cached || ajaxFn(buildOptions(method, url, data))
 
-    var req = ajaxFn(ajaxOptions)
-
-    req.done(function(responseData) {
-      emit('$wiring', 'done', url)
-
-      // если указан .to() — пишем туда напрямую
-      if (target !== null) {
-        // пишем всё содержимое ответа прямо туда
-        if (Array.isArray(target)) {
-          target.length = 0
-          responseData.forEach(function(item) { target.push(item) })
-        } else {
-          Object.assign(target, responseData)
+    function attach() {
+      req.done(function(responseData) {
+        if (target) {
+          if (target.__wire) {
+            // .to(state, 'posts'): присваивание через стратегию
+            var fn = strategies[strategy] || strategies.drop
+            fn(target.obj, target.key, responseData, failHandlers)
+          }
+          else if (Array.isArray(target)) {
+            // .to(state.posts), где posts = []
+            if (strategy !== 'push') target.length = 0
+            if (Array.isArray(responseData)) Array.prototype.push.apply(target, responseData)
+            else target.push(responseData)
+          }
+          else if (target && typeof target === 'object') {
+            // .to(state.posts), где posts = {}
+            if (strategy !== 'push') {
+              Object.keys(target).forEach(function(k) { delete target[k] })
+            }
+            if (responseData && typeof responseData === 'object') {
+              Object.assign(target, responseData)   // массив ответа превратится в ключи 0,1,2...
+            }
+            else if (typeof console !== 'undefined') {
+              console.warn('[wire] ' + url + ' вернул не объект/массив, а ' + typeof responseData + ': записывать в .to() нечего')
+            }
+          }
+          else if (typeof console !== 'undefined') {
+            console.warn('[wire] .to() получил ' + Object.prototype.toString.call(target) + ': данные из ' + url + ' не записаны')
+          }
         }
         doneHandlers.forEach(function(fn) { fn(responseData) })
-        return
-      }
+      })
 
-      // авто-мерж всегда
-      if (state && state.server && typeof responseData === 'object' && responseData !== null) {
-        var strategyFn = strategies[strategy] || strategies.drop
-        Object.keys(responseData).forEach(function(key) {
-          strategyFn(state.server, key, responseData[key], failHandlers)
-        })
-      }
+      req.fail(function(jqXHR, textStatus) {
+        if (typeof console !== 'undefined') {
+          console.error('[wire] ' + method.toUpperCase() + ' ' + url + ' → ' + (jqXHR && jqXHR.status) + ' ' + textStatus)
+        }
+        failHandlers.forEach(function(fn) { fn(jqXHR, textStatus) })
+      })
 
-      // .done() просто дополнительный колбэк, не отменяет мерж
-      doneHandlers.forEach(function(fn) { fn(responseData) })
-    })
+      req.always(function() {
+        delete pending[url]
+        emit('$wiring', 'end', url)
+        alwaysHandlers.forEach(function(fn) { fn() })
+      })
+    }
 
-    req.fail(function(jqXHR, textStatus) {
-      emit('$wiring', 'fail', url)
-      failHandlers.forEach(function(fn) { fn(jqXHR, textStatus) })
-    })
-
-    req.always(function() {
-      delete pending[url]
-      emit('$wiring', 'always', url)
-      alwaysHandlers.forEach(function(fn) { fn() })
-    })
+    // у готового ответа done() срабатывает синхронно, до .to(...); откладываем,
+    // чтобы цепочка .get(url).to(state.x) успела выставить target
+    if (cached) Promise.resolve().then(attach)
+    else attach()
 
     return chain
   }
@@ -167,11 +204,12 @@ function createWire(options) {
     return !!pending[url]
   }
 
-  wire.get    = function(url, strategy)       { return request('get',    url, null, strategy) }
-  wire.post   = function(url, data, strategy) { return request('post',   url, data, strategy) }
-  wire.put    = function(url, data, strategy) { return request('put',    url, data, strategy) }
-  wire.delete = function(url, strategy)       { return request('delete', url, null, strategy) }
-  wire.on     = on
+  wire.get      = function(url, strategy)       { return request('get',    url, null, strategy) }
+  wire.post     = function(url, data, strategy) { return request('post',   url, data, strategy) }
+  wire.put      = function(url, data, strategy) { return request('put',    url, data, strategy) }
+  wire.delete   = function(url, strategy)       { return request('delete', url, null, strategy) }
+  wire.prefetch = prefetch
+  wire.on       = on
 
   return wire
 }

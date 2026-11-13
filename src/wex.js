@@ -37,7 +37,7 @@ function scopeSnapshot(scp) {
 }
 
 // level: 'error' пишется всегда, 'warn' только при config.debug
-function report(title, ctx = {}) {
+export function report(title, ctx = {}) {
   const level = ctx.level || 'warn'
   if (level !== 'error' && !config.debug) return
 
@@ -121,10 +121,9 @@ export function filter(name, fn) {
 const nativeImport = new Function('u', 'return import(u)') // в обход бандлера
 const remoteCache = {}
 
-function loadRemote(url) {
-  if (remoteCache[url]) return remoteCache[url]
-
-  const entry = remoteCache[url] = { view: null, waiters: new Set() }
+function startLoad(entry, url) {
+  if (entry.started) return entry
+  entry.started = true
 
   const fetchText = async (tries = 3) => {
     for (let i = 0; ; i ++) {
@@ -141,45 +140,60 @@ function loadRemote(url) {
   }
 
   fetchText()
-    .then(async (html) => {
-      const doc = new DOMParser().parseFromString(html, 'text/html')
-      const tpl = doc.querySelector('template')
-      if (!tpl) throw new Error(`Wex: no <template> in ${url}`)
+      .then(async (html) => {
+        const doc = new DOMParser().parseFromString(html, 'text/html')
+        const tpl = doc.querySelector('template')
+        if (!tpl) throw new Error(`Wex: no <template> in ${url}`)
 
-      const $tpl = $(`<template>${tpl.innerHTML}</template>`)
-      const code = doc.querySelector('script[type="module"]')?.textContent
+        const $tpl = $(`<template>${tpl.innerHTML}</template>`)
+        const code = doc.querySelector('script[type="module"]')?.textContent
 
-      let view = null
-      if (code) {
-        const blobUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))
-        try {
-          const mod = await nativeImport(blobUrl)
-          view = mod.default($tpl)
+        let view = null
+        if (code) {
+          const blobUrl = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }))
+          try {
+            view = (await nativeImport(blobUrl)).default($tpl)
+          }
+          finally {
+            URL.revokeObjectURL(blobUrl)
+          }
         }
-        finally {
-          URL.revokeObjectURL(blobUrl)
+        else {
+          view = $tpl.vm()
         }
-      }
-      else {
-        view = $tpl.vm()
-      }
 
-      if (!(view instanceof View)) {
-        throw new Error(`Wex: ${url} must export default a function returning a view`)
-      }
+        if (!(view instanceof View)) {
+          throw new Error(`Wex: ${url} must export default a function returning a view`)
+        }
 
-      entry.view = view
-      const waiters = [...entry.waiters]
-      entry.waiters.clear()
-      // ошибка одного ожидающего не должна остановить остальных
-      waiters.forEach((v) => {
-        try { v.update(true) }
-        catch (e) { console.error(`Wex: ошибка обновления после загрузки ${url}`, e) }
+        entry.view = view
+        const waiters = [...entry.waiters]
+        entry.waiters.clear()
+        waiters.forEach((v) => {
+          try { v.update(true) }
+          catch (e) { console.error(`Wex: ошибка обновления после загрузки ${url}`, e) }
+        })
       })
-    })
-    .catch(e => console.error(e))
+      .catch((e) => {
+        entry.started = false // следующая попытка (наведение, рендер) загрузит заново
+        console.error(e)
+      })
 
   return entry
+}
+
+function loadRemote(url, { lazy = false } = {}) {
+  let entry = remoteCache[url]
+  if (!entry) {
+    entry = remoteCache[url] = { view: null, waiters: new Set(), started: false, load: () => startLoad(entry, url) }
+  }
+  if (!lazy) entry.load()
+  return entry
+}
+
+// для роутера: прогреть компонент заранее
+export function preloadComponent(url) {
+  return loadRemote(url)
 }
 
 // ----------- compiler ---------------
@@ -205,10 +219,17 @@ function prepare($root) {
 }
 
 function compile($root, components, directives, state, view, [template, scope, isolate]) {
+  if (config.debug && /<(img|iframe|source|video|audio|script|link)\b[^>]*\s(src|href|srcset)\s*=\s*["'][^"']*\{\{/i.test(template)) {
+    report('«{{ }}» внутри src/href: браузер запросит сырую строку и получит 404', {
+      view, level: 'error', source: template.slice(0, 160),
+      hint: 'Используйте w-src="выражение" вместо src="{{ }}"',
+    })
+  }
+
   const root = $root[0]
   const records = root.__jQvmCompiledRecords = root.__jQvmCompiledRecords || []
 
-  const $element = $(`<div />`).html(template)
+  const $element = $(inertBox(template))
 
   const interpolate = ($element, scp = scope) => {
 	  $element.each(function() {
@@ -559,6 +580,14 @@ function diffAndPatch($root, nodes) {
   diffAndPatchChildren($root, nodes)
 }
 
+let inertDoc = null
+function inertBox(html) {
+  inertDoc = inertDoc || document.implementation.createHTMLDocument('')
+  const box = inertDoc.createElement('div')
+  box.innerHTML = html
+  return box
+}
+
 // ---------- очередь отложенного монтирования ----------
 const mountQueue = []
 let mountScheduled = false
@@ -767,10 +796,11 @@ function vm(initState = {}) {
   function component(name, compile, affect) {
     // component('my-button', './components/button.html')
     if (isString(compile)) {
-      const entry = loadRemote(compile)
-      const placeholder = () => entry.view || ''
+      const entry = loadRemote(compile, affect)   // affect здесь = { lazy: true }
+      const placeholder = () => { entry.load(); return entry.view || '' }
       placeholder.remote = entry
       compile = placeholder
+      affect = undefined
     }
 
     if (compile && compile.remote) {
@@ -790,8 +820,8 @@ function vm(initState = {}) {
     return view
   }
 
-  function directive(name, compile, affect) {
-    _push(directives, name, compile, affect)
+  function directive(name, compile, affect, priority) {
+    _push(directives, name, compile, affect, priority)
     return view
   }
 
@@ -1367,6 +1397,13 @@ directive('w-for', function($el, attrs) {
 
   const { scope: parentScope, compile } = this
   const data = parentScope.parse(dataKey)
+
+  if (config.debug && Array.isArray(data) && data.length === 0) {
+    report(`w-for «${attr}»: массив пустой, отрисовывать нечего`, {
+      view: this.view, el, expr: dataKey, scope: parentScope,
+      hint: 'Если данные грузятся асинхронно, проверьте, что они дошли до этого компонента (см. пропсы)',
+    })
+  }
 
   // make it not be able to compile again
   $el.removeAttr('w-for')

@@ -1,18 +1,21 @@
 [
   {
     "name": "Homer Simpson",
-    "avatar": "/Test/Images/Homer.png",
+    "avatar": "/Demo/Comments/Images/Homer.png",
     "text": "Мой комментарий номер один",
+    "date": "2 ноября, 2026 в 13:26",
     "replies": [
       {
         "name": "Bart Simpson",
-        "avatar": "/Test/Images/Bart.png",
+        "avatar": "/Demo/Comments/Images/Bart.png",
         "text": "Ответ моему отцу",
+        "date": "2 ноября, 2026 в 13:27",
         "replies": [
           {
             "name": "Homer Simpson",
-            "avatar": "/Test/Images/Homer.png",
-            "text": "Ответ моему сыну"
+            "avatar": "/Demo/Comments/Images/Homer.png",
+            "text": "Ответ моему сыну",
+            "date": "2 ноября, 2026 в 13:28"
           }
         ]
       }
@@ -20,13 +23,15 @@
   },
   {
     "name": "Bart Simpson",
-    "avatar": "/Test/Images/Bart.png",
+    "avatar": "/Demo/Comments/Images/Bart.png",
     "text": "123",
+    "date": "2 ноября, 2026 в 13:29",
     "replies": [
       {
         "name": "Homer Simpson",
-        "avatar": "/Test/Images/Homer.png",
-        "text": "555"
+        "avatar": "/Demo/Comments/Images/Homer.png",
+        "text": "555",
+        "date": "2 ноября, 2026 в 13:30"
       }
     ]
   }
