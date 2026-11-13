@@ -1,3 +1,5 @@
+const WEX_VERSION = '1.2.1';
+
 import { ScopeX } from 'scopex'
 import {
   isNone, each, isObject, isFunction, isString,
@@ -1631,3 +1633,5 @@ export function useJQuery(jQuery) {
 
   return $
 }
+
+console.log('[Wex]: загружена версия: ' + WEX_VERSION);
