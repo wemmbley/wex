@@ -13,10 +13,12 @@ Wex - это реактивный CDN фронтенд фреймворк. Он 
 
 ```html 
 <script src="https://unpkg.com/jquery/dist/jquery.min.js"></script>
-<script src="https://cbcdn.githack.com/wemmbley/wex/raw/branch/master/dist/wex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/wemmbley/wex@master/dist/wex.min.js"></script>
 ```
 
-🤖 Чтобы Ваш `AI-ассистент` легко Вам помогал пришлите ему содержимое файлов на выбор:
+## 🤖AI vibe-кодинг
+
+Чтобы Ваш `AI-ассистент` легко Вам помогал пришлите ему содержимое файлов на выбор:
 - `book/ai.txt` полное содержание книги, обучающий формат, много текста 
 - `book/ai_compact.txt` короткое содержание всего что есть, текста мало, концентрат для ИИ.
 
