@@ -117,14 +117,18 @@ module.exports = (env = {}) => {
     };
 
     // ---------- Плагины ----------
-    const docConfigs = createPluginConfigs('editor', 'wex-doc', 'WexDoc', { '../wex.js': 'jqvm' });
+    // Ключи externals должны совпадать с import-путями в исходниках плагинов
+    // (src/plugins/editor/*.js импортирует '../../wex.js' и './wex-doc.js').
+    // Иначе rolldown считает ядро внутренним модулем и встраивает его копию
+    // в бандл плагина: директивы регистрируются в приватной копии и не работают.
+    const docConfigs = createPluginConfigs('editor', 'wex-doc', 'WexDoc', { '../../wex.js': 'jqvm' });
     const editorConfigs = createPluginConfigs(
         'editor',
         'wex-editor',
         'WexEditor',
         {
-            '../wex.js': 'jqvm',
-            'wex-doc.js': 'WexDoc'
+            '../../wex.js': 'jqvm',
+            './wex-doc.js': 'WexDoc'
         }
     );
     const datatable = createPluginConfigs('datatable', 'wex-datatable');
