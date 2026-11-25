@@ -26,6 +26,9 @@ const component = Wex.component
 
 const { directive } = Wex
 
+// как в wex-doc.js: в браузере берём report ядра, вне его — обычный console
+const report = Wex.report || ((title, ctx) => console.error('[WexEditor]', title, ctx || {}))
+
 // =====================================================================
 // Парсер: DOM → JSON
 // =====================================================================
@@ -572,13 +575,50 @@ export function createEditorView(options = {}) {
         })
 }
 
+// w-editor="post.body": редактор создаётся на элементе один раз и пишет разобранный
+// документ обратно в state по указанному пути. Повторный вызов affect (изменились
+// прочитанные данные) только синхронизирует содержимое, не пересоздавая редактор.
+function editorAffect($el, attrs, options) {
+    const el = $el[0]
+    const expr = attrs['w-editor']
+    const scope = this.scope
+
+    let doc
+    try { doc = scope.parse(expr) }
+    catch (e) {
+        report(`w-editor: ошибка в выражении «${expr}»: ${e.message}`, { view: this.view, el, expr, level: 'error' })
+        return
+    }
+
+    const key = stable(doc)
+
+    // редактор уже живёт на этом элементе: обновляем, только если документ изменили снаружи
+    if (el.__wexEditor && !el.__wexEditor.destroyed) {
+        if (el.__wexEditorKey !== key) {
+            el.__wexEditorKey = key
+            el.__wexEditor.setDoc(doc)
+        }
+        return
+    }
+
+    const ed = new Editor(el, Object.assign({}, options || {}, { doc }))
+    el.__wexEditor = ed
+    el.__wexEditorKey = key
+
+    ed.on('change', (next) => {
+        el.__wexEditorKey = stable(next)   // своё же изменение не должно вернуться как внешнее
+        scope.assign(expr, next)
+    })
+}
+
 directive('w-editor', null, editorAffect)
 
 export function createEditor(options = {}) {
     return function () {
-        settings = options
         // прямо на view: не зависит от того, в каком экземпляре ядра зарегистрирована глобальная директива
-        this.view.directive('w-editor', null, editorAffect)
+        this.view.directive('w-editor', null, function ($el, attrs) {
+            return editorAffect.call(this, $el, attrs, options)
+        })
         this.view.directive('w-doc', null, docAffect)
     }
 }
