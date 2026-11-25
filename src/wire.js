@@ -148,6 +148,8 @@ function createWire(options) {
 
     function attach() {
       req.done(function(responseData) {
+        emit('$wiring', 'done', url)
+
         if (target) {
           if (target.__wire) {
             // .to(state, 'posts'): присваивание через стратегию
@@ -175,11 +177,32 @@ function createWire(options) {
           else if (typeof console !== 'undefined') {
             console.warn('[wire] .to() получил ' + Object.prototype.toString.call(target) + ': данные из ' + url + ' не записаны')
           }
+
+          doneHandlers.forEach(function(fn) { fn(responseData) })
+          return
         }
+
+        // Авто-мерж в state.server: поля ответа раскладываются по нему через стратегию.
+        // Не выполняется, если данные уже записаны через .to() или у цепочки есть .done():
+        // в этом случае ответ обрабатывает само приложение.
+        var canMerge = !hasDone
+          && state
+          && state.server
+          && responseData !== null
+          && typeof responseData === 'object'
+
+        if (canMerge) {
+          var merge = strategies[strategy] || strategies.drop
+          Object.keys(responseData).forEach(function(key) {
+            merge(state.server, key, responseData[key], failHandlers)
+          })
+        }
+
         doneHandlers.forEach(function(fn) { fn(responseData) })
       })
 
       req.fail(function(jqXHR, textStatus) {
+        emit('$wiring', 'fail', url)
         if (typeof console !== 'undefined') {
           console.error('[wire] ' + method.toUpperCase() + ' ' + url + ' → ' + (jqXHR && jqXHR.status) + ' ' + textStatus)
         }
@@ -188,7 +211,7 @@ function createWire(options) {
 
       req.always(function() {
         delete pending[url]
-        emit('$wiring', 'end', url)
+        emit('$wiring', 'always', url)
         alwaysHandlers.forEach(function(fn) { fn() })
       })
     }
