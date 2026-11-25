@@ -31,4 +31,6 @@ if (typeof window !== 'undefined') {
   window.Wex = api
   if (!window.jqvm) window.jqvm = api
 }
-console.log('[Wex]: загружена версия: ' + WEX_VERSION)
+// Версия в консоли нужна только при отладке: config.debug включается на localhost,
+// поэтому на продакшене библиотека не пишет в консоль при загрузке.
+if (config.debug) console.log('[Wex]: загружена версия: ' + WEX_VERSION)
