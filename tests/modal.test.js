@@ -15,7 +15,7 @@
  */
 
 require('./modal-setup')
-require('../src/modal')
+require('../src/plugins/modal/modal.js')
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
